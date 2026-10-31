@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="鑑價初估">
 <title>房屋鑑價初估工作台</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -218,6 +220,7 @@ footer{font-size:12px;color:var(--muted);text-align:center}
       <input id="file" type="file" accept=".zip,.csv" multiple hidden>
       <div id="impLog" class="hint"></div>
       <div class="row" style="margin-top:10px">
+        <button class="btn ghost" id="btnExport" type="button">匯出資料庫（給手機用）</button>
         <button class="btn danger" id="btnClearDb" type="button">清除已匯入資料</button>
         <span id="clearConfirm" class="row" hidden>
           <span class="tiny">確定清除？</span>
@@ -432,7 +435,7 @@ function dbStatus(){
   const p=$('dbPill');
   if(!DB.length){p.textContent='尚未匯入實價登錄';p.className='db-pill';return;}
   const mx=Math.max(...DB.map(r=>r.date)), mn=Math.min(...DB.map(r=>r.date));
-  p.textContent=`實價資料 ${DB.length.toLocaleString()} 筆｜${ym(mn)}～${ym(mx)}`;p.className='db-pill ok';
+  p.textContent=`實價資料 ${DB.length.toLocaleString()} 筆｜${ym(mn)}～${ym(mx)}${DBSRC==='cloud'?'｜雲端資料庫':''}`;p.className='db-pill ok';
 }
 
 /* 匯入 */
@@ -479,6 +482,38 @@ $('btnClearDb').onclick=()=>$('clearConfirm').hidden=false;
 $('btnClearNo').onclick=()=>$('clearConfirm').hidden=true;
 $('btnClearYes').onclick=async()=>{DB=[];await kvSet('db',[]);dbStatus();$('clearConfirm').hidden=true;$('impLog').textContent='';toast('已清除實價資料');if(LAST)run();};
 
+
+/* ===== 雲端資料庫：網站同資料夾的 lvr-taichung.zip，手機打開自動載入 ===== */
+let DBSRC='local';
+const PACK=['id','dist','addr','road','key','g','type','date','price','area','land','parkP','parkN','parkUnpriced','age','floor','tfloor','layout','note','special'];
+async function loadCloud(){
+  if(!window.JSZip||location.protocol==='file:') return;
+  try{
+    const res=await fetch('lvr-taichung.zip',{cache:'no-cache'}); if(!res.ok) return;
+    const z=await JSZip.loadAsync(await res.arrayBuffer());
+    const f=z.file('lvr-taichung.json'); if(!f) return;
+    const pk=JSON.parse(await f.async('string'));
+    if(pk.v!==1||!Array.isArray(pk.rows)) return;
+    const stamp=await kvGet('cloudStamp');
+    if(stamp===pk.made&&DB.length) {DBSRC='cloud';dbStatus();return;}
+    const map=new Map(DB.map(r=>[r.id,r])); let a=0;
+    for(const row of pk.rows){const r={};PACK.forEach((k,i)=>r[k]=row[i]);r.parkUnpriced=!!r.parkUnpriced;r.special=!!r.special;if(!map.has(r.id)){map.set(r.id,r);a++;}}
+    DB=[...map.values()]; await kvSet('db',DB); await kvSet('cloudStamp',pk.made); DBSRC='cloud'; dbStatus();
+    if(a) toast(`已載入雲端實價資料 ${a.toLocaleString()} 筆`);
+    if(LAST) run();
+  }catch(e){}
+}
+$('btnExport').onclick=async()=>{
+  if(!DB.length){toast('目前沒有資料可匯出');return;}
+  if(!window.JSZip){toast('壓縮元件載入失敗，請重新整理');return;}
+  const since=Date.now()-5*365.25*86400000;
+  const rows=DB.filter(r=>/^臺中市/.test(r.addr)&&r.date>=since).map(r=>PACK.map(k=>k==='parkUnpriced'||k==='special'?(r[k]?1:0):(r[k]??null)));
+  const z=new JSZip(); z.file('lvr-taichung.json',JSON.stringify({v:1,made:Date.now(),rows}));
+  const blob=await z.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:9}});
+  try{const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='lvr-taichung.zip';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);
+    toast(`已匯出臺中市 ${rows.length.toLocaleString()} 筆（${(blob.size/1048576).toFixed(1)} MB）`);}
+  catch(e){toast('這個視窗不能下載檔案，請在 GitHub 網站版操作');}
+};
 /* 地址自動帶行政區 */
 $('s_addr').addEventListener('change',()=>{const d=distOf($('s_addr').value);if(d&&DISTS.includes(d))$('s_dist').value=d;});
 $('s_type').addEventListener('change',()=>{const t=$('s_type').value;$('p_basis').value='build';$('p_ageTol').value=(t==='透天'||t==='店面')?10:5;});
@@ -618,6 +653,7 @@ $('btnReset').onclick=()=>{['s_addr','s_total','s_parkA','s_area','s_land','s_ag
   renderEmpty('請填標的資料後按「開始初估」。');
   $('compBox').innerHTML='<div class="empty"><strong>比較案例會列在這裡</strong><span>系統優先找同路段、同類型、近期成交；不足時自動擴大到同路名、同行政區，每一筆都可以手動勾掉。</span></div>';
   DB=(await kvGet('db'))||[]; MAN=(await kvGet('man'))||[]; dbStatus(); renderMan();
+  loadCloud();
 })();
 </script>
 </body>
