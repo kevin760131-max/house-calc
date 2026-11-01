@@ -10,13 +10,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;800&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
-/* Layout: 手機 App 式單欄；頂部標題列、內容卡片、底部固定導覽列（首頁／買房／賣房／預算／工具） */
+/* Layout: 手機 App 式單欄；頂部標題列、內容卡片、底部固定導覽列（首頁／買房／賣房／預算／工具）
+   區塊之間用底色深淺分開，不用框線；字級只用 13／16／20／28／36 五階 */
 :root{
-  --bg:#f3f5f4; --surface:#ffffff; --ink:#18282a; --muted:#5b6b6c; --line:#d8e0de;
+  --bg:#ecf0ef; --surface:#ffffff; --ink:#18282a; --muted:#5b6b6c; --line:#d8e0de;
   --accent:#0d6b62; --accent-soft:#e1efec; --amber:#b26a12; --amber-soft:#f6ead9;
   --red:#b23a2e; --red-soft:#f7e3e0;
   --display:"Noto Serif TC","Songti TC","PMingLiU",serif;
   --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --fs-s:13px; --fs-b:16px; --fs-h:20px; --fs-l:28px; --fs-xl:36px;
+  --r:12px; --r-s:8px;
   --nav-h:64px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
@@ -29,121 +32,131 @@
   --red:#ef8b7f; --red-soft:#3a2220; color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs-b);line-height:1.6;-webkit-tap-highlight-color:transparent}
 .num{font-variant-numeric:tabular-nums}
 
-.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
-  padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px}
 .top-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
-.logo{width:38px;height:38px;border-radius:10px;background:var(--accent);color:var(--surface);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px;flex:none}
-.top h1{font-family:var(--display);font-size:18px;margin:0;line-height:1.25}
-.top .sub{font-size:12px;color:var(--muted)}
+.logo{width:40px;height:40px;border-radius:var(--r-s);background:var(--accent);color:var(--surface);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:var(--fs-s);flex:none}
+.top h1{font-family:var(--display);font-size:var(--fs-h);margin:0;line-height:1.25}
+.top .sub{font-size:var(--fs-s);color:var(--muted)}
 
-main{max-width:640px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left,0px)) calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 28px) max(16px,env(safe-area-inset-right,0px))}
+main{max-width:640px;margin:0 auto;padding:12px max(16px,env(safe-area-inset-left,0px)) calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 28px) max(16px,env(safe-area-inset-right,0px))}
 .page{display:flex;flex-direction:column;gap:16px}
 
-section.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
-h2{font-family:var(--display);font-size:19px;margin:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-h2 span{font-family:var(--body);font-size:12.5px;font-weight:500;color:var(--muted)}
-h3{font-size:14px;margin:0;color:var(--muted);font-weight:700;letter-spacing:.04em}
+section.card{background:var(--surface);border-radius:var(--r);padding:20px 18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+h2{font-family:var(--display);font-size:var(--fs-h);margin:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+h2 span{font-family:var(--body);font-size:var(--fs-s);font-weight:500;color:var(--muted)}
+h3{font-size:var(--fs-s);margin:0;color:var(--muted);font-weight:700}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media (max-width:380px){.fields{grid-template-columns:1fr}}
+@media (max-width:340px){.fields{grid-template-columns:1fr}}
 .f{display:flex;flex-direction:column;gap:4px;min-width:0}
 .f.full{grid-column:1/-1}
-label{font-size:13px;color:var(--muted);font-weight:500}
-.in{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;background:var(--bg);overflow:hidden}
-.in:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.in input,.in select{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:16px;padding:9px 10px;font-variant-numeric:tabular-nums;outline:none}
-.in .u{padding:0 10px;color:var(--muted);font-size:13px;white-space:nowrap}
-.hint{font-size:12px;color:var(--muted)}
-.seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
-.seg button{flex:1;border:0;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;padding:9px 6px;cursor:pointer}
+label{font-size:var(--fs-s);color:var(--muted);font-weight:500}
+.in{display:flex;align-items:center;border-radius:var(--r-s);background:var(--bg);overflow:hidden}
+.in:focus-within{outline:2px solid var(--accent);outline-offset:0}
+.in input,.in select{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:var(--fs-b);padding:10px;font-variant-numeric:tabular-nums;outline:none}
+.in .u{padding:0 10px;color:var(--muted);font-size:var(--fs-s);white-space:nowrap}
+.hint{font-size:var(--fs-s);color:var(--muted)}
+.seg{display:flex;gap:4px;padding:4px;border-radius:var(--r-s);background:var(--bg)}
+.seg button{flex:1;border:0;border-radius:6px;background:transparent;color:var(--ink);font:inherit;font-size:var(--fs-b);padding:7px 6px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface);font-weight:700}
 .seg button:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
-.check{display:flex;align-items:flex-start;gap:8px;font-size:14px;color:var(--ink)}
-.check input{width:18px;height:18px;accent-color:var(--accent);margin-top:3px;flex:none}
-.check small{display:block;font-size:12px;color:var(--muted)}
-.chip{border:1px solid var(--accent);background:transparent;color:var(--accent);font:inherit;font-size:13px;padding:4px 12px;border-radius:999px;cursor:pointer;align-self:flex-start}
-.chip:hover{background:var(--accent-soft)}
+.check{display:flex;align-items:flex-start;gap:8px;font-size:var(--fs-b);color:var(--ink)}
+.check input{width:18px;height:18px;accent-color:var(--accent);margin-top:4px;flex:none}
+.check small{display:block;font-size:var(--fs-s);color:var(--muted)}
+.chip{border:0;background:var(--accent-soft);color:var(--accent);font:inherit;font-size:var(--fs-s);font-weight:500;padding:5px 12px;border-radius:999px;cursor:pointer;align-self:flex-start}
+.chip:hover{filter:brightness(1.08)}
+.chip:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 
-.summary{background:var(--ink);color:var(--bg);border-radius:14px;padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.summary .k{font-size:12.5px;opacity:.75}
-.summary .v{font-family:var(--display);font-size:clamp(22px,6vw,28px);font-weight:800;line-height:1.2}
-.summary .v small{font-family:var(--body);font-size:13px;font-weight:500;opacity:.8;margin-left:3px}
+.summary{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.summary .k{font-size:var(--fs-s);opacity:.75}
+.summary .v{font-family:var(--display);font-size:var(--fs-l);font-weight:800;line-height:1.2}
+.summary .v small{font-family:var(--body);font-size:var(--fs-s);font-weight:500;opacity:.8;margin-left:3px}
 .summary .hero{grid-column:1/-1}
-.summary .hero .v{color:var(--accent-soft);font-size:clamp(28px,8vw,36px)}
+.summary .hero .v{color:var(--accent-soft);font-size:var(--fs-xl)}
 
-.result{border-top:1px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:12px}
+.result{padding-top:8px;display:flex;flex-direction:column;gap:12px}
 .big{display:flex;flex-wrap:wrap;gap:10px}
-.tile{flex:1 1 130px;background:var(--accent-soft);border-radius:10px;padding:11px 13px}
+.tile{flex:1 1 130px;background:var(--accent-soft);border-radius:var(--r-s);padding:12px 14px}
 .tile.alt{background:var(--amber-soft)}
 .tile.warn{background:var(--red-soft)}
-.tile .k{font-size:12px;color:var(--muted)}
-.tile .v{font-size:21px;font-weight:700}
-.tile .v small{font-size:13px;font-weight:500;color:var(--muted);margin-left:2px}
+.tile .k{font-size:var(--fs-s);color:var(--muted)}
+.tile .v{font-size:var(--fs-h);font-weight:700}
+.tile .v small{font-size:var(--fs-s);font-weight:500;color:var(--muted);margin-left:2px}
 .bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line)}
 .bar i{display:block;height:100%}
-.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:var(--fs-s);color:var(--muted)}
 .legend b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 
-table{width:100%;border-collapse:collapse;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:var(--fs-b)}
 td,th{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
 td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
-td .s{display:block;font-size:12px;color:var(--muted)}
-tr.total td{border-bottom:0;font-weight:700;font-size:16px;padding-top:12px}
+td .s{display:block;font-size:var(--fs-s);color:var(--muted)}
+tr.total td{border-bottom:0;font-weight:700;padding-top:12px}
 tr.minus td:last-child{color:var(--red)}
-.ref th{font-size:12px;color:var(--muted);font-weight:700}
-.ref td,.ref th{padding:7px 6px}
-.ref td:last-child{text-align:left;white-space:normal}
+.ref th{font-size:var(--fs-s);color:var(--muted);font-weight:700}
+.ref th:last-child{text-align:right}
+.ref td,.ref th{padding:8px 6px}
+.ref td:last-child{white-space:normal}
 .ref tr.on td{background:var(--accent-soft);font-weight:700}
 
-.callout{border-radius:10px;padding:10px 12px;font-size:13px;background:var(--amber-soft);color:var(--ink)}
+.callout{border-radius:var(--r-s);padding:10px 12px;font-size:var(--fs-s);background:var(--amber-soft);color:var(--ink)}
 .callout.ok{background:var(--accent-soft)}
 .callout.bad{background:var(--red-soft)}
 
 .rows{display:flex;flex-direction:column;gap:8px}
 .row{display:grid;grid-template-columns:1fr 120px 32px;gap:8px;align-items:center}
 .row .in input{padding:8px 9px}
-.x{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--muted);font-size:16px;cursor:pointer;line-height:1}
-.x:hover{color:var(--red);border-color:var(--red)}
+.x{width:32px;height:32px;border-radius:50%;border:0;background:var(--bg);color:var(--muted);font-size:var(--fs-b);cursor:pointer;line-height:1}
+.x:hover{color:var(--red);background:var(--red-soft)}
 
-/* 首頁 */
-.hello{display:flex;flex-direction:column;gap:6px;padding:4px 2px}
-.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:700}
-.hello h2{font-size:clamp(24px,7vw,32px);line-height:1.25;font-weight:800}
+/* 首頁：主入口一列，其他工具依用途分組成清單 */
+.hello{display:flex;flex-direction:column;gap:8px;padding:8px 2px 4px}
+.hello h2{font-size:var(--fs-l);line-height:1.25;font-weight:800}
+@media (min-width:600px){.hello h2{font-size:var(--fs-xl)}}
+.hello h2{display:block}
+.hello h2 .nb{display:inline-block;font:inherit;color:inherit}
 .hello p{margin:0;color:var(--muted)}
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tool{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;color:var(--ink);font:inherit;cursor:pointer;text-decoration:none;min-height:118px}
-.tool:hover{border-color:var(--accent)}
-.tool:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-.tool svg{width:26px;height:26px;color:var(--accent)}
-.tool b{font-size:15.5px}
-.tool span{font-size:12.5px;color:var(--muted);line-height:1.45}
-.tool.wide{grid-column:1/-1;flex-direction:row;align-items:center;gap:14px;min-height:auto;background:var(--accent);border-color:var(--accent);color:var(--surface)}
-.tool.wide svg{color:var(--surface);flex:none;width:30px;height:30px}
-.tool.wide span{color:var(--surface);opacity:.85}
-.tool.wide:hover{filter:brightness(1.06)}
+.lead,.list a{display:grid;grid-template-columns:24px 1fr 18px;gap:14px;align-items:center;padding:14px 16px;text-decoration:none;color:var(--ink)}
+.lead > span,.list a > span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lead b,.list b{font-size:var(--fs-b)}
+.lead span span,.list span span{font-size:var(--fs-s);color:var(--muted);line-height:1.45}
+.lead svg,.list svg{width:24px;height:24px;color:var(--accent)}
+.lead svg:last-child,.list svg:last-child{width:18px;height:18px;color:var(--muted)}
+.lead{grid-template-columns:28px 1fr 18px;padding:18px;border-radius:var(--r);background:var(--accent);color:var(--surface)}
+.lead svg,.lead svg:last-child,.lead span span{color:var(--surface)}
+.lead svg:first-child{width:28px;height:28px}
+.lead span span{opacity:.85}
+.lead:hover{filter:brightness(1.06)}
+.group{display:flex;flex-direction:column;gap:8px}
+.group h3{padding:0 2px}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;border-radius:var(--r);overflow:hidden}
+.list a{background:var(--surface)}
+.list a:hover{background:var(--accent-soft)}
+.lead:focus-visible,.list a:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
 
-.agent{display:flex;flex-direction:column;gap:12px;border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--surface)}
-.agent .name{font-family:var(--display);font-size:20px;font-weight:800}
-.agent .meta{font-size:12.5px;color:var(--muted)}
+.agent{display:flex;flex-direction:column;gap:12px;border-radius:var(--r);padding:20px 18px;background:var(--surface)}
+.agent .name{font-family:var(--display);font-size:var(--fs-h);font-weight:800}
+.agent .meta{font-size:var(--fs-s);color:var(--muted)}
 .agent .acts{display:flex;gap:10px;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--accent);background:transparent;color:var(--accent);font:inherit;font-size:14px;padding:8px 16px;border-radius:999px;cursor:pointer;text-decoration:none}
+.btn{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--accent-soft);color:var(--accent);font:inherit;font-size:var(--fs-b);font-weight:500;padding:9px 18px;border-radius:999px;cursor:pointer;text-decoration:none}
 .btn.solid{background:var(--accent);color:var(--surface);font-weight:700}
 .btn:hover{filter:brightness(1.06)}
 .btn:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-.note{font-size:12px;color:var(--muted);margin:0}
+.note{font-size:var(--fs-s);color:var(--muted);margin:0}
 
 /* 子分頁 */
 .subtabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .subtabs::-webkit-scrollbar{display:none}
-.subtabs button{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:14px;padding:7px 14px;border-radius:999px;cursor:pointer}
-.subtabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:700}
+.subtabs button{flex:none;border:0;background:var(--surface);color:var(--ink);font:inherit;font-size:var(--fs-b);padding:7px 16px;border-radius:999px;cursor:pointer}
+.subtabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:700}
+.subtabs button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 
 /* 底部導覽 */
-nav.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);padding-bottom:env(safe-area-inset-bottom,0px)}
 nav.tabbar .in-nav{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);height:var(--nav-h)}
-nav.tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);text-decoration:none;font-size:11.5px;font-weight:500}
+nav.tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);text-decoration:none;font-size:var(--fs-s);font-weight:500}
 nav.tabbar a svg{width:23px;height:23px}
 nav.tabbar a[aria-current="page"]{color:var(--accent);font-weight:700}
 nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;border-radius:8px}
@@ -162,6 +175,7 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
   <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="m7 15 4-4 3 3 5-6"/></symbol>
   <symbol id="i-calc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></symbol>
   <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
 </svg>
 
 <header class="top">
@@ -176,19 +190,31 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
 <!-- ============ 首頁 ============ -->
 <div class="page" id="p-home" data-title="房產試算工具箱" data-sub="買房‧賣房‧換屋‧投資，一站算清楚">
   <div class="hello">
-    <div class="eyebrow">台中買屋 ‧ 賣屋 ‧ 換屋</div>
-    <h2>買賣房子前，先把錢算清楚</h2>
+    <h2><span class="nb">台中買賣房子前，</span><span class="nb">先把錢算清楚</span></h2>
     <p>房貸、稅費、房地合一稅、換屋預算一次試算。數字可直接修改，手機也好用。</p>
   </div>
-  <div class="cards">
-    <a class="tool wide" href="#buy"><svg><use href="#i-key"/></svg><div><b>買房要準備多少錢？</b><br><span>每月房貸＋自備款＋過戶稅費，一次算出交屋前要準備的現金</span></div></a>
-    <a class="tool" href="#sell/tax"><svg><use href="#i-tag"/></svg><b>房地合一稅</b><span>2.0 稅制，自住優惠、持有年限自動判斷</span></a>
-    <a class="tool" href="#sell/swap"><svg><use href="#i-swap"/></svg><b>換屋試算</b><span>賣舊屋實拿多少、能換多少錢的新家</span></a>
-    <a class="tool" href="#budget"><svg><use href="#i-wallet"/></svg><b>買房預算</b><span>從家庭收支推算買得起的房屋總價</span></a>
-    <a class="tool" href="#tools/yield"><svg><use href="#i-chart"/></svg><b>租金投報率</b><span>毛／淨投報率與回本年數</span></a>
-    <a class="tool" href="#tools/ping"><svg><use href="#i-ruler"/></svg><b>坪數換算</b><span>坪 ↔ 平方公尺、每坪單價</span></a>
-    <a class="tool" href="#tools/share"><svg><use href="#i-calc"/></svg><b>公設比試算</b><span>反推室內實坪與實際單價</span></a>
-  </div>
+  <a class="lead" href="#buy"><svg><use href="#i-key"/></svg><span><b>買房要準備多少錢？</b><span>每月房貸＋自備款＋過戶稅費，一次算出交屋前要準備的現金</span></span><svg><use href="#i-chev"/></svg></a>
+  <section class="group" aria-labelledby="g-sell">
+    <h3 id="g-sell">賣房與換屋</h3>
+    <ul class="list">
+      <li><a href="#sell/tax"><svg><use href="#i-tag"/></svg><span><b>房地合一稅</b><span>2.0 稅制，自住優惠、持有年限自動判斷</span></span><svg><use href="#i-chev"/></svg></a></li>
+      <li><a href="#sell/swap"><svg><use href="#i-swap"/></svg><span><b>換屋試算</b><span>賣舊屋實拿多少、能換多少錢的新家</span></span><svg><use href="#i-chev"/></svg></a></li>
+    </ul>
+  </section>
+  <section class="group" aria-labelledby="g-money">
+    <h3 id="g-money">預算與投資</h3>
+    <ul class="list">
+      <li><a href="#budget"><svg><use href="#i-wallet"/></svg><span><b>買房預算</b><span>從家庭收支推算買得起的房屋總價</span></span><svg><use href="#i-chev"/></svg></a></li>
+      <li><a href="#tools/yield"><svg><use href="#i-chart"/></svg><span><b>租金投報率</b><span>毛／淨投報率與回本年數</span></span><svg><use href="#i-chev"/></svg></a></li>
+    </ul>
+  </section>
+  <section class="group" aria-labelledby="g-area">
+    <h3 id="g-area">坪數與公設</h3>
+    <ul class="list">
+      <li><a href="#tools/ping"><svg><use href="#i-ruler"/></svg><span><b>坪數換算</b><span>坪 ↔ 平方公尺、每坪單價</span></span><svg><use href="#i-chev"/></svg></a></li>
+      <li><a href="#tools/share"><svg><use href="#i-calc"/></svg><span><b>公設比試算</b><span>反推室內實坪與實際單價</span></span><svg><use href="#i-chev"/></svg></a></li>
+    </ul>
+  </section>
   <div class="agent" data-agent></div>
 </div>
 
@@ -287,7 +313,7 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
     <div class="callout">依房地合一稅 2.0（110 年 7 月 1 日起交易適用）試算，適用 105 年 1 月 1 日以後取得的房地。日期以所有權移轉登記日為準。</div>
     <div class="summary" aria-live="polite">
       <div class="hero"><div class="k">預估應繳房地合一稅</div><div class="v num" id="xTax">—</div></div>
-      <div><div class="k">持有期間</div><div class="v num" id="xHold" style="font-size:20px">—</div></div>
+      <div><div class="k">持有期間</div><div class="v num" id="xHold" style="font-size:var(--fs-h)">—</div></div>
       <div><div class="k">適用稅率</div><div class="v num" id="xRate">—</div></div>
     </div>
 
