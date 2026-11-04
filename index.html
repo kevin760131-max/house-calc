@@ -161,6 +161,23 @@ nav.tabbar a svg{width:23px;height:23px}
 nav.tabbar a[aria-current="page"]{color:var(--accent);font-weight:700}
 nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;border-radius:8px}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .25s ease}}
+
+/* 房貸方案比較 */
+.plans{display:flex;flex-direction:column;gap:12px}
+.plan-h{display:flex;align-items:center;justify-content:space-between}
+.plan-h b{font-family:var(--display);font-size:var(--fs-h)}
+.cmp-wrap{overflow-x:auto;margin:0 -4px;padding:0 4px}
+.cmp{min-width:100%}
+.cmp th,.cmp td{text-align:right;padding:9px 4px;font-size:var(--fs-s);white-space:nowrap;font-variant-numeric:tabular-nums}
+.cmp th:first-child,.cmp td:first-child{text-align:left;color:var(--muted);font-size:var(--fs-s);padding-left:0}
+.cmp thead th{font-size:var(--fs-s);color:var(--ink);font-weight:700;vertical-align:bottom;white-space:normal;line-height:1.35}
+.cmp thead th small{display:block;font-weight:500;color:var(--muted)}
+.cmp td.best{color:var(--accent);font-weight:700}
+.cmp tr.key td{font-size:var(--fs-b);font-weight:700}
+@media (min-width:480px){.cmp th,.cmp td{font-size:var(--fs-b);padding:9px 6px}.cmp tr.key td{font-size:var(--fs-h)}}
+.cmp tr.key td:first-child{font-size:var(--fs-s);font-weight:500}
+.acts-row{display:flex;gap:10px;flex-wrap:wrap}
+#cImg{width:100%;border-radius:var(--r-s);display:block;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -175,6 +192,7 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
   <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="m7 15 4-4 3 3 5-6"/></symbol>
   <symbol id="i-calc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></symbol>
   <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+  <symbol id="i-cols" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="9.5" y="4" width="5" height="16" rx="1"/><rect x="16" y="4" width="5" height="16" rx="1"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
 </svg>
 
@@ -194,6 +212,12 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
     <p>房貸、稅費、房地合一稅、換屋預算一次試算。數字可直接修改，手機也好用。</p>
   </div>
   <a class="lead" href="#buy"><svg><use href="#i-key"/></svg><span><b>買房要準備多少錢？</b><span>每月房貸＋自備款＋過戶稅費，一次算出交屋前要準備的現金</span></span><svg><use href="#i-chev"/></svg></a>
+  <section class="group" aria-labelledby="g-loan">
+    <h3 id="g-loan">房貸</h3>
+    <ul class="list">
+      <li><a href="#compare"><svg><use href="#i-cols"/></svg><span><b>房貸方案比較</b><span>2～4 家銀行利率、年限並排，一鍵產出比較圖</span></span><svg><use href="#i-chev"/></svg></a></li>
+    </ul>
+  </section>
   <section class="group" aria-labelledby="g-sell">
     <h3 id="g-sell">賣房與換屋</h3>
     <ul class="list">
@@ -260,6 +284,7 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
       </table>
       <div class="bar" aria-hidden="true"><i id="bP" style="background:var(--accent)"></i><i id="bI" style="background:var(--amber)"></i></div>
       <div class="legend"><span><b style="background:var(--accent)"></b>本金 <span id="lP" class="num"></span></span><span><b style="background:var(--amber)"></b>利息 <span id="lI" class="num"></span></span></div>
+      <button type="button" class="chip" id="toCompare">用這個條件比較其他銀行方案 →</button>
     </div>
   </section>
 
@@ -597,6 +622,52 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
   <div class="agent" data-agent></div>
 </div>
 
+<!-- ============ 房貸方案比較 ============ -->
+<div class="page" id="p-compare" data-title="房貸方案比較" data-sub="多家銀行條件並排，一鍵產出比較圖" hidden>
+  <section class="card" aria-labelledby="h-cbase">
+    <h2 id="h-cbase">共同條件 <span>每個方案都用同一筆貸款</span></h2>
+    <div class="fields">
+      <div class="f"><label for="cPrice">房屋總價</label>
+        <div class="in"><input id="cPrice" type="number" inputmode="decimal" min="0" step="10" value="1200"><span class="u">萬元</span></div></div>
+      <div class="f"><label for="cRatio">貸款成數</label>
+        <div class="in"><input id="cRatio" type="number" inputmode="decimal" min="0" max="100" step="5" value="80"><span class="u">%</span></div></div>
+      <div class="f"><label for="cFee">買方過戶稅費</label>
+        <div class="in"><input id="cFee" type="number" inputmode="decimal" min="0" step="0.1" value="0"><span class="u">萬元</span></div>
+        <span class="hint">填 0 則圖上不顯示交屋前現金</span></div>
+      <div class="f"><label for="cTitle">物件名稱（選填）</label>
+        <div class="in"><input id="cTitle" type="text" maxlength="24" placeholder="例：北屯三房平車"></div></div>
+      <div class="f full"><label id="cmLabel">還款方式</label>
+        <div class="seg" role="group" aria-labelledby="cmLabel">
+          <button type="button" id="cmEq" aria-pressed="true">本息平均攤還</button>
+          <button type="button" id="cmPr" aria-pressed="false">本金平均攤還</button>
+        </div></div>
+    </div>
+    <button type="button" class="chip" id="cFromBuy">帶入「買房資金試算」的總價、成數與稅費</button>
+  </section>
+
+  <div class="plans" id="cPlans"></div>
+  <button type="button" class="btn" id="cAdd">＋ 新增方案（最多 4 個）</button>
+
+  <section class="card" aria-labelledby="h-cres">
+    <h2 id="h-cres">比較結果 <span id="cResSub"></span></h2>
+    <div class="cmp-wrap"><table class="cmp" id="cTable"></table></div>
+    <div class="callout ok" id="cSay"></div>
+    <div class="acts-row">
+      <button type="button" class="btn solid" id="cMake">產生比較圖</button>
+    </div>
+    <div id="cmpOut" hidden>
+      <img id="cImg" alt="房貸方案比較圖">
+      <div class="acts-row">
+        <button type="button" class="btn solid" id="cShare" hidden>分享圖片（LINE 等）</button>
+        <a class="btn" id="cDl" download="房貸方案比較.png">下載圖片</a>
+      </div>
+      <p class="note">手機也可以長按圖片直接儲存。</p>
+    </div>
+  </section>
+  <p class="note">貸款利率、成數與年限以銀行核貸為準；試算結果僅供參考，以實際核定為準。</p>
+  <div class="agent" data-agent></div>
+</div>
+
 </main>
 
 <nav class="tabbar" aria-label="主選單">
@@ -648,7 +719,7 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
   }
 
   /* ---------- 買房 ---------- */
-  let method = 'eq';
+  let method = 'eq', lastBuy = null;
   function loanCalc(L, annual, years, grace, m){
     const r = annual / 100 / 12, n = Math.max(0, Math.round(years*12)), g = Math.min(Math.round(grace*12), Math.max(n-1,0));
     const k = n - g;
@@ -683,6 +754,7 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
     $('fCert').textContent = yuan(f.cert); $('fMort').textContent = yuan(f.mort); $('fScr').textContent = yuan(f.scr);
     $('fEsc').textContent = yuan(f.esc); $('fAgent').textContent = yuan(f.agent);
     const fees = Object.values(f).reduce((a,b)=>a+b,0);
+    lastBuy = { price: val('price'), ratio, fees, rate: val('rate'), years, grace };
     $('fTotal').textContent = yuan(fees);
     $('sCash').innerHTML = wan(down + fees);
     $('sMonthly').innerHTML = fmt(res.first) + '<small>元</small>';
@@ -836,7 +908,220 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
     document.querySelectorAll('#shareTable tr[data-lo]').forEach(tr => tr.classList.toggle('on', all > 0 && cr >= +tr.dataset.lo && cr < +tr.dataset.hi));
   }
 
-  function calcAll(){ calcBuy(); calcTax(); calcSwap(); calcBudget(); calcYield(); calcPing(); calcShare(); }
+  /* ---------- 房貸方案比較 ---------- */
+  const LETTERS = 'ABCD';
+  let cMethod = 'eq', cLast = null;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const wan1 = n => (Math.round(n/WAN*10)/10).toLocaleString('zh-TW') + ' 萬';
+  const rateTxt = r => (Math.round(r*1000)/1000) + '%';
+  function addPlan(d){
+    const box = $('cPlans'); if (box.children.length >= 4) return;
+    const s = document.createElement('section'); s.className = 'card';
+    s.innerHTML = '<div class="plan-h"><b data-l></b><button type="button" class="x" aria-label="刪除此方案">×</button></div>'
+      + '<div class="fields">'
+      + '<div class="f"><label>銀行</label><div class="in"><input data-k="bank" type="text" maxlength="12" placeholder="例：第一銀行"></div></div>'
+      + '<div class="f"><label>方案說明</label><div class="in"><input data-k="plan" type="text" maxlength="12" placeholder="例：新青安貸款"></div></div>'
+      + '<div class="f"><label>年利率</label><div class="in"><input data-k="rate" type="number" inputmode="decimal" min="0" step="0.005"><span class="u">%</span></div></div>'
+      + '<div class="f"><label>貸款年限</label><div class="in"><input data-k="years" type="number" inputmode="numeric" min="1" max="40" step="1"><span class="u">年</span></div></div>'
+      + '<div class="f"><label>寬限期</label><div class="in"><input data-k="grace" type="number" inputmode="numeric" min="0" max="5" step="1"><span class="u">年</span></div></div>'
+      + '</div>';
+    s.querySelectorAll('input').forEach(i => { i.value = d[i.dataset.k] ?? ''; i.addEventListener('input', calcCompare); });
+    s.querySelector('.x').addEventListener('click', () => { if (box.children.length > 2){ s.remove(); calcCompare(); } });
+    box.appendChild(s); calcCompare();
+  }
+  function readPlans(){
+    return [...$('cPlans').children].map((s, i) => {
+      const g = k => s.querySelector('[data-k="'+k+'"]').value.trim();
+      const n = k => { const v = parseFloat(g(k)); return isFinite(v) && v > 0 ? v : 0; };
+      return { letter: LETTERS[i], bank: g('bank'), plan: g('plan'), rate: n('rate'), years: Math.min(n('years'),40), grace: n('grace') };
+    });
+  }
+  function calcCompare(){
+    const box = $('cPlans');
+    [...box.children].forEach((s, i) => { s.querySelector('[data-l]').textContent = '方案 ' + LETTERS[i]; s.querySelector('.x').hidden = box.children.length <= 2; });
+    $('cAdd').hidden = box.children.length >= 4;
+    const price = val('cPrice')*WAN, ratio = Math.min(val('cRatio'),100), L = price*ratio/100, fee = val('cFee')*WAN;
+    const plans = readPlans().map(p => {
+      const r = loanCalc(L, p.rate, p.years, p.grace, cMethod);
+      return Object.assign(p, { name: p.bank || ('方案 ' + p.letter), monthly: r.first, graceMonthly: r.graceMonthly, interest: r.interest, total: L + r.interest, ok: p.years > 0 && L > 0 });
+    });
+    const ok = plans.filter(p => p.ok);
+    const minM = ok.length ? Math.min(...ok.map(p => p.monthly)) : 0, minI = ok.length ? Math.min(...ok.map(p => p.interest)) : 0;
+    const bestM = ok.find(p => p.monthly === minM), bestI = ok.find(p => p.interest === minI);
+    const anyGrace = plans.some(p => p.grace > 0);
+    const mLabel = (anyGrace ? '寬限期後' : '') + (cMethod === 'eq' ? '每月應繳' : '首月應繳');
+    const cell = (p, v, best) => '<td class="' + (best ? 'best' : '') + '">' + (p.ok ? v : '—') + '</td>';
+    let h = '<thead><tr><th></th>' + plans.map(p => '<th>' + esc(p.letter + '｜' + p.name) + (p.plan ? '<small>' + esc(p.plan) + '</small>' : '') + '</th>').join('') + '</tr></thead><tbody>';
+    h += '<tr><td>年利率</td>' + plans.map(p => '<td>' + rateTxt(p.rate) + '</td>').join('') + '</tr>';
+    h += '<tr><td>貸款年限</td>' + plans.map(p => '<td>' + (p.years || '—') + ' 年</td>').join('') + '</tr>';
+    if (anyGrace) h += '<tr><td>寬限期</td>' + plans.map(p => '<td>' + (p.grace ? p.grace + ' 年' : '無') + '</td>').join('') + '</tr>';
+    if (anyGrace) h += '<tr><td>寬限期內每月</td>' + plans.map(p => cell(p, p.grace ? fmt(p.graceMonthly) : '—', false)).join('') + '</tr>';
+    h += '<tr class="key"><td>' + mLabel + '</td>' + plans.map(p => cell(p, fmt(p.monthly), p === bestM)).join('') + '</tr>';
+    h += '<tr><td>每月差額</td>' + plans.map(p => cell(p, p === bestM ? '最低' : '+' + fmt(p.monthly - minM), false)).join('') + '</tr>';
+    h += '<tr><td>總利息</td>' + plans.map(p => cell(p, fmt(p.interest), p === bestI)).join('') + '</tr>';
+    h += '<tr><td>總還款金額</td>' + plans.map(p => cell(p, fmt(p.total), p === bestI)).join('') + '</tr>';
+    $('cTable').innerHTML = h + '</tbody>';
+    $('cResSub').textContent = '貸款 ' + wanPlain(L) + '，單位：元';
+    const say = [];
+    if (bestM && bestI) {
+      say.push(bestM === bestI ? bestM.letter + ' 月付最低、總利息也最少。' : bestM.letter + ' 月付最低，' + bestI.letter + ' 總利息最少。');
+      ok.filter(p => p !== bestI).forEach(p => say.push(p.letter + ' 比 ' + bestI.letter + ' 多付利息約 ' + wan1(p.interest - minI) + '。'));
+    }
+    $('cSay').textContent = say.join('');
+    cLast = { price, ratio, L, fee, plans, bestM, bestI, minM, minI, anyGrace, mLabel, title: $('cTitle').value.trim() };
+    $('cmpOut').hidden = true;
+  }
+  function setCMethod(m){ cMethod = m; $('cmEq').setAttribute('aria-pressed', m==='eq'); $('cmPr').setAttribute('aria-pressed', m==='pr'); calcCompare(); }
+  $('cmEq').addEventListener('click', () => setCMethod('eq'));
+  $('cmPr').addEventListener('click', () => setCMethod('pr'));
+  function fromBuy(){
+    if (!lastBuy) return;
+    $('cPrice').value = lastBuy.price; $('cRatio').value = lastBuy.ratio; $('cFee').value = Math.round(lastBuy.fees/WAN*10)/10;
+    setCMethod(method);
+  }
+  $('cFromBuy').addEventListener('click', fromBuy);
+  $('toCompare').addEventListener('click', () => {
+    fromBuy();
+    const first = $('cPlans').children[0];
+    if (first){ first.querySelector('[data-k="rate"]').value = lastBuy.rate; first.querySelector('[data-k="years"]').value = lastBuy.years; first.querySelector('[data-k="grace"]').value = lastBuy.grace || ''; calcCompare(); }
+    location.hash = '#compare';
+  });
+  $('cAdd').addEventListener('click', () => addPlan({ years: 30 }));
+  [{ rate: 2.55, years: 40 }, { rate: 2.68, years: 30 }, { rate: 1.775, years: 40 }].forEach(addPlan);
+
+  /* 比較圖：Canvas 直接繪製，固定淺色版面，寬 1200（輸出 2 倍） */
+  const SERIF = '"Noto Serif TC","Songti TC","PMingLiU",serif', SANS = '"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  const IC = { bg:'#f4f1ea', ink:'#1c2a28', muted:'#6b7773', line:'#e2ddd2', teal:'#2f9e8c', tealD:'#1d5c52', orange:'#e0a05a', card:'#ffffff', chip:'#f4f1ea', warn:'#b4653a' };
+  function drawCompare(ctx, d){
+    const W = 1200, P = 56;
+    const font = (w, s, f) => ctx.font = w + ' ' + s + 'px ' + (f || SANS);
+    const txt = (t, x, y, c, align) => { ctx.fillStyle = c || IC.ink; ctx.textAlign = align || 'left'; ctx.fillText(t, x, y); };
+    const fit = (t, maxW, size, w, f) => { let s = size; font(w, s, f); while (s > 11 && ctx.measureText(t).width > maxW){ s -= 1; font(w, s, f); } return s; };
+    const rr = (x, y, w, h, r, fill, stroke, lw) => { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.lineWidth = lw || 1; ctx.strokeStyle = stroke; ctx.stroke(); } };
+    const hline = (x1, x2, y, c, lw, dash) => { ctx.beginPath(); ctx.setLineDash(dash || []); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.lineWidth = lw || 1; ctx.strokeStyle = c; ctx.stroke(); ctx.setLineDash([]); };
+    const wrapLines = (t, maxW) => { const out = []; let line = ''; for (const ch of t){ if (ctx.measureText(line + ch).width > maxW){ out.push(line); line = ch; } else line += ch; } if (line) out.push(line); return out; };
+    ctx.fillStyle = IC.bg; ctx.fillRect(0, 0, W, 4000); ctx.textBaseline = 'alphabetic';
+    let y = 56;
+    /* 標題 */
+    rr(P, y + 4, 64, 64, 14, IC.tealD); font(800, 20, SERIF); txt('有巢', P + 32, y + 43, '#fff', 'center');
+    fit('房貸方案比較', 420, 44, 800, SERIF); txt('房貸方案比較', P + 84, y + 46);
+    fit(d.title ? d.title + '｜各家銀行條件一次看' : '各家銀行條件一次看，月付與總利息清楚對照', 520, 18, 400); txt(d.title ? d.title + '｜各家銀行條件一次看' : '各家銀行條件一次看，月付與總利息清楚對照', P + 84, y + 80, IC.muted);
+    const R = W - P;
+    font(400, 17); const l1 = '房屋總價 '; ctx.textAlign = 'right';
+    font(700, 22); txt(fmt(d.price/WAN) + ' 萬', R, y + 24, IC.ink, 'right'); const w1 = ctx.measureText(fmt(d.price/WAN) + ' 萬').width;
+    font(400, 17); txt(l1, R - w1, y + 24, IC.muted, 'right');
+    font(700, 22); const s2 = wanTxt(d.L) + ' 萬'; txt(s2, R, y + 56, IC.ink, 'right'); const w2 = ctx.measureText(s2).width;
+    font(400, 17); txt('貸款成數 ' + d.ratio + '%｜貸款 ', R - w2, y + 56, IC.muted, 'right');
+    const graceTxt = d.anyGrace ? '寬限期依各方案' : '無寬限期';
+    txt((cMethod === 'eq' ? '本息平均攤還' : '本金平均攤還') + '｜' + graceTxt, R, y + 86, IC.muted, 'right');
+    y += 112; hline(P, R, y, IC.ink, 2);
+    /* 方案卡 */
+    const n = d.plans.length, gap = 22, cw = (W - 2*P - gap*(n-1)) / n, cy = y + 40;
+    const ch = 440 + (d.anyGrace ? 52 : 0) + 80;
+    d.plans.forEach((p, i) => {
+      const x = P + i*(cw + gap), ix = x + 26, iw = cw - 52;
+      const tags = []; if (p.ok && p === d.bestM) tags.push('月付最低'); if (p.ok && p === d.bestI) tags.push('總利息最少');
+      const best = tags.length > 0;
+      if (best){ ctx.save(); ctx.shadowColor = 'rgba(47,158,140,.18)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 10; rr(x, cy, cw, ch, 18, IC.card); ctx.restore(); rr(x + 1.5, cy + 1.5, cw - 3, ch - 3, 17, null, IC.teal, 3); }
+      else rr(x + .5, cy + .5, cw - 1, ch - 1, 18, IC.card, IC.line, 1);
+      if (best){ const t = tags.join('・'); const ts = fit(t, cw - 60, 15, 700); const tw = ctx.measureText(t).width + 28; rr(x + 24, cy - 16, tw, 32, 16, IC.teal); txt(t, x + 38, cy + 6, '#fff'); }
+      font(400, 15); txt('方 案  ' + p.letter, ix, cy + 44, IC.muted);
+      fit(p.name, iw, 30, 800, SERIF); txt(p.name, ix, cy + 84);
+      fit(p.plan || ' ', iw, 16, 400); txt(p.plan || '', ix, cy + 112, IC.muted);
+      const chips = [['年利率', rateTxt(p.rate)], ['年限', (p.years || '—') + ' 年']]; if (d.anyGrace) chips.push(['寬限', p.grace ? p.grace + ' 年' : '無']);
+      const cg = 10, cwid = (iw - cg*(chips.length-1)) / chips.length;
+      chips.forEach((c, k) => { const cx = ix + k*(cwid + cg); rr(cx, cy + 130, cwid, 62, 10, IC.chip); font(400, 13); txt(c[0], cx + cwid/2, cy + 154, IC.muted, 'center'); fit(c[1], cwid - 12, 22, 700); txt(c[1], cx + cwid/2, cy + 182, IC.ink, 'center'); });
+      hline(ix, ix + iw, cy + 214, IC.line);
+      font(400, 16); txt(d.mLabel, ix, cy + 244, IC.muted);
+      const mv = p.ok ? fmt(p.monthly) : '—'; const ms = fit(mv, iw - 40, 54, 700); txt(mv, ix, cy + 300, best ? IC.tealD : IC.ink);
+      const mw = ctx.measureText(mv).width; font(400, 20); txt('元', ix + mw + 6, cy + 300, IC.muted);
+      const diff = !p.ok ? '' : p === d.bestM ? (n > 1 ? '各方案中月付最輕鬆' : '') : '比方案 ' + d.bestM.letter + ' 每月多 ' + fmt(p.monthly - d.minM) + ' 元';
+      fit(diff, iw, 15, 400); txt(diff, ix, cy + 328, p === d.bestM ? IC.teal : IC.warn);
+      const rows = [['總利息', p.ok ? fmt(p.interest) + ' 元' : '—'], ['總還款金額', p.ok ? fmt(p.total) + ' 元' : '—']];
+      if (d.anyGrace) rows.push(['寬限期內每月', p.grace && p.ok ? fmt(p.graceMonthly) + ' 元' : '—']);
+      let ry = cy + 372;
+      rows.forEach(r => { font(400, 17); txt(r[0], ix, ry, IC.muted); const lw = ctx.measureText(r[0]).width; fit(r[1], iw - lw - 12, 17, 700); txt(r[1], ix + iw, ry, IC.ink, 'right'); hline(ix, ix + iw, ry + 16, IC.line, 1, [4, 4]); ry += 52; });
+      const by = ry - 32, tot = p.total || 1, pw = iw * (d.L / tot);
+      ctx.save(); ctx.beginPath(); ctx.roundRect(ix, by, iw, 12, 6); ctx.clip(); ctx.fillStyle = IC.orange; ctx.fillRect(ix, by, iw, 12); ctx.fillStyle = IC.teal; ctx.fillRect(ix, by, p.ok ? pw : 0, 12); ctx.restore();
+      const pp = p.ok ? Math.round(d.L / tot * 100) : 0;
+      rr(ix, by + 30, 10, 10, 2, IC.teal); font(400, 14); txt('本金 ' + pp + '%', ix + 16, by + 40, IC.muted);
+      const lw2 = ctx.measureText('本金 ' + pp + '%').width; rr(ix + lw2 + 32, by + 30, 10, 10, 2, IC.orange); txt('利息 ' + (p.ok ? 100 - pp : 0) + '%', ix + lw2 + 48, by + 40, IC.muted);
+    });
+    y = cy + ch + 30;
+    /* 重點解讀 */
+    const others = d.bestI ? d.plans.filter(p => p.ok && p !== d.bestI) : [];
+    if (others.length){
+      const lx = P + 300, colW = (R - 34 - lx - 24*(others.length-1)) / others.length, b = d.bestI;
+      const descs = others.map(p => {
+        const dr = Math.round((p.rate - b.rate)*1000)/1000, dy = p.years - b.years, parts = [];
+        if (dr) parts.push('利率' + (dr > 0 ? '高 ' : '低 ') + Math.abs(dr) + '%');
+        if (dy) parts.push('年限' + (dy > 0 ? '多 ' : '少 ') + Math.abs(dy) + ' 年');
+        if (p.grace !== b.grace) parts.push('寬限期不同');
+        return (parts.join('、') || '條件相近') + '，' + (p.monthly > b.monthly ? '月付也較高' : '月付較低但利息較多');
+      });
+      font(400, 15); const descL = descs.map(t => wrapLines(t, colW));
+      const maxL = Math.min(3, Math.max(...descL.map(l => l.length)));
+      const bh = 110 + maxL*22; rr(P, y, W - 2*P, bh, 18, IC.tealD);
+      font(800, 24, SERIF); txt('怎麼看這張表？', P + 34, y + bh/2 + 9, '#fff');
+      others.forEach((p, k) => {
+        const x = lx + k*(colW + 24);
+        const lab = p.letter + ' 對比 ' + b.letter + (p.years === b.years ? '（同為 ' + p.years + ' 年）' : '');
+        fit(lab, colW, 15, 400); txt(lab, x, y + 42, 'rgba(255,255,255,.75)');
+        const big = '利息差 ' + wan1(p.interest - d.minI); fit(big, colW, 28, 700); txt(big, x, y + 80, '#fff');
+        font(400, 15); descL[k].slice(0, 3).forEach((l, j) => txt(l, x, y + 108 + j*22, 'rgba(255,255,255,.85)'));
+      });
+      y += bh + 22;
+    }
+    /* 共同數字 */
+    const tiles = [['各方案自備款相同', wanTxt(d.price - d.L)]]; if (d.fee > 0) tiles.push(['交屋前需準備現金（含自備款與過戶稅費）', wanTxt(d.price - d.L + d.fee)]);
+    const tw = (W - 2*P - 22*(tiles.length-1)) / tiles.length;
+    tiles.forEach((t, k) => { const x = P + k*(tw + 22); rr(x + .5, y + .5, tw - 1, 63, 14, IC.card, IC.line); font(700, 28); const vw = ctx.measureText(t[1]).width; font(400, 16); txt('萬', x + tw - 22, y + 42, IC.muted, 'right'); font(700, 28); txt(t[1], x + tw - 42, y + 43, IC.ink, 'right'); fit(t[0], tw - vw - 90, 17, 400); txt(t[0], x + 22, y + 40, IC.muted); });
+    y += 64 + 30;
+    /* 註記 */
+    let note = '※ 本表為試算結果，僅供參考，實際利率、成數、年限以銀行核貸為準' + (d.fee > 0 ? '，稅費以實際核定為準' : '') + '。';
+    if (d.plans.some(p => /青安/.test(p.bank + p.plan))) note += '新青安貸款需符合申請資格。';
+    font(400, 14); wrapLines(note, W - 2*P).forEach(l => { txt(l, P, y, IC.muted); y += 24; });
+    y += 4; hline(P, R, y, IC.ink, 2); y += 18;
+    /* 經紀人 */
+    font(800, 24, SERIF); txt('廖貽強', P, y + 40); const nw = ctx.measureText('廖貽強').width;
+    font(800, 30, SERIF); txt('0922-543299', P + nw + 16, y + 41, IC.tealD);
+    font(400, 15); txt('有巢氏房屋 台中文心捷運加盟店｜台中市北屯區文心路四段674號1F', R, y + 24, IC.muted, 'right');
+    txt('經紀人證號 (102)登字第227351號', R, y + 50, IC.muted, 'right');
+    return y + 60 + 40;
+  }
+  let cBlobUrl = null, cFile = null;
+  async function makeImage(){
+    const b = $('cMake'); b.disabled = true; b.textContent = '產生中…';
+    try {
+      const d = cLast;
+      const sample = '房貸方案比較各家銀行條件一次看月付與總利息清楚對照有巢廖貽強' + d.title + d.plans.map(p => p.name + p.plan).join('') + '本息金平均攤還寬限期依各無年限率每首後應繳比多元差萬怎麼看這張表對同為高低少較但相近也自備款相同交屋前需準備現金含與過戶稅費註試算結果僅供參考實際成數以銀行核貸為準定新青安需符合申請資格氏房屋台中文心捷運加盟店市北屯區路四段號經紀人證登字第總還最輕鬆0123456789.,%｜（）：、・ ';
+      if (document.fonts && document.fonts.load){
+        await Promise.race([Promise.all([
+          document.fonts.load('800 30px "Noto Serif TC"', sample),
+          document.fonts.load('400 16px "Noto Sans TC"', sample),
+          document.fonts.load('700 16px "Noto Sans TC"', sample)
+        ]), new Promise(r => setTimeout(r, 4000))]);
+      }
+      const S = 2, big = document.createElement('canvas'); big.width = 1200*S; big.height = 2400*S;
+      const ctx = big.getContext('2d'); ctx.scale(S, S);
+      const H = drawCompare(ctx, d);
+      const out = document.createElement('canvas'); out.width = 1200*S; out.height = Math.ceil(H*S);
+      out.getContext('2d').drawImage(big, 0, 0);
+      const blob = await new Promise(r => out.toBlob(r, 'image/png'));
+      if (cBlobUrl) URL.revokeObjectURL(cBlobUrl);
+      cBlobUrl = URL.createObjectURL(blob);
+      const fname = (d.title ? d.title + '_' : '') + '房貸方案比較.png';
+      cFile = new File([blob], fname, { type: 'image/png' });
+      $('cImg').src = cBlobUrl; $('cDl').href = cBlobUrl; $('cDl').download = fname;
+      $('cShare').hidden = !(navigator.canShare && navigator.canShare({ files: [cFile] }));
+      $('cmpOut').hidden = false;
+      $('cImg').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } finally { b.disabled = false; b.textContent = '產生比較圖'; }
+  }
+  $('cMake').addEventListener('click', makeImage);
+  $('cShare').addEventListener('click', () => { if (cFile) navigator.share({ files: [cFile], title: '房貸方案比較' }).catch(() => {}); });
+
+  function calcAll(){ calcBuy(); calcTax(); calcSwap(); calcBudget(); calcYield(); calcPing(); calcShare(); calcCompare(); }
   document.querySelectorAll('main input').forEach(el => { el.addEventListener('input', calcAll); el.addEventListener('change', calcAll); });
 
   /* ---------- 聯絡卡 ---------- */
@@ -851,7 +1136,7 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
   });
 
   /* ---------- 路由 ---------- */
-  const pages = ['home','buy','sell','budget','tools'];
+  const pages = ['home','buy','sell','budget','tools','compare'];
   function setSub(page, sub){
     const wrap = $('p-'+page); if (!wrap) return;
     const btns = wrap.querySelectorAll('.subtabs button');
@@ -865,7 +1150,8 @@ nav.tabbar a:focus-visible{outline:2px solid var(--amber);outline-offset:-4px;bo
     const [p, sub] = (location.hash.replace('#','') || 'home').split('/');
     const page = pages.includes(p) ? p : 'home';
     pages.forEach(x => $('p-'+x).hidden = x !== page);
-    document.querySelectorAll('nav.tabbar a').forEach(a => { if (a.dataset.tab === page) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+    const tab = page === 'compare' ? 'buy' : page;
+    document.querySelectorAll('nav.tabbar a').forEach(a => { if (a.dataset.tab === tab) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
     setSub(page, sub);
     const el = $('p-'+page);
     $('pageTitle').textContent = el.dataset.title; $('pageSub').textContent = el.dataset.sub;
