@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>格局圖繪製工具｜房產試算工具箱</title>
+<meta name="description" content="上傳手繪格局圖，描出房間、一鍵配置家具，匯出彩色格局示意圖。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap">
+<style>
+:root{
+  --paper:#eceff0; --sheet:#ffffff; --ink:#18262c; --muted:#5d6b6e; --line:#d5dcd9;
+  --accent:#1d6a5e; --accent-soft:#e1efeb; --seal:#b23a2e; --seal-soft:#f7e4e1; --warn:#9a6a10; --warn-soft:#f6ecd6;
+  --f-display:"Noto Serif TC","Songti TC",serif; --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --fs-s:13px; --fs-b:15px; --fs-h:18px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#121a1c; --sheet:#1a2427; --ink:#e3ebe8; --muted:#97a6a6; --line:#2f3d40;
+  --accent:#5fbfae; --accent-soft:#1e3632; --seal:#e9796c; --seal-soft:#3b2220; --warn:#e0b25a; --warn-soft:#382d17; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:var(--fs-b);line-height:1.55;display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+[hidden]{display:none!important}
+header.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;padding:10px 16px 8px}
+h1{font-family:var(--f-display);font-weight:900;font-size:22px;margin:0;line-height:1.25}
+.sub{color:var(--muted);font-size:var(--fs-s)}
+.back{color:var(--accent);text-decoration:none}
+.app{flex:1;min-height:0;display:grid;grid-template-columns:330px minmax(0,1fr);gap:0}
+aside.side{overflow:auto;padding:0 12px 24px 16px;display:grid;gap:12px;align-content:start}
+section.card{background:var(--sheet);border-radius:8px;padding:14px}
+h2{font-family:var(--f-display);font-weight:600;font-size:var(--fs-h);margin:0 0 8px;display:flex;gap:8px;align-items:baseline}
+h2 .step{font-family:var(--f-body);font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 9px}
+h3{font-size:var(--fs-s);color:var(--muted);margin:12px 0 6px;font-weight:700}
+p.hint{font-size:var(--fs-s);color:var(--muted);margin:0 0 8px}
+label.f{display:flex;flex-direction:column;gap:2px;font-size:var(--fs-s);color:var(--muted);min-width:0}
+label.ck{display:flex;align-items:center;gap:6px;font-size:var(--fs-s);color:var(--ink);cursor:pointer}
+input,select{font:inherit;font-size:var(--fs-b);color:var(--ink);background:var(--paper);border:0;border-radius:4px;padding:7px 9px;width:100%;min-width:0;font-variant-numeric:tabular-nums}
+input[type=checkbox]{width:auto;accent-color:var(--accent)}
+input[type=range]{padding:0;accent-color:var(--accent);background:transparent}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.stack{display:grid;gap:8px}
+.btn{font:inherit;font-size:var(--fs-s);border:0;background:var(--accent);color:#fff;padding:8px 12px;border-radius:4px;cursor:pointer;font-weight:500;text-align:center}
+.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.btn.danger{background:var(--seal-soft);color:var(--seal)}
+.btn.wide{width:100%}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
+.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--warn);outline-offset:1px}
+.lib{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.lib button{font:inherit;font-size:12px;border:0;background:var(--paper);color:var(--ink);border-radius:4px;padding:6px 2px;cursor:pointer;line-height:1.25}
+.lib button:hover{background:var(--accent-soft);color:var(--accent)}
+.meta{font-size:var(--fs-s);color:var(--muted);font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px;background:var(--warn-soft);color:var(--warn)}
+.stage{position:relative;min-width:0;min-height:0;background:#f6f3ee;border-top-left-radius:8px;overflow:hidden}
+svg#cv{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+.toolbar{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.toolbar .grp{display:flex;gap:2px;background:#ffffffee;border-radius:6px;padding:3px;box-shadow:0 1px 3px #0002;pointer-events:auto}
+.toolbar button{font:inherit;font-size:13px;border:0;background:transparent;color:#18262c;padding:6px 10px;border-radius:4px;cursor:pointer;white-space:nowrap}
+.toolbar button:hover{background:#e1efeb}
+.toolbar button[aria-pressed="true"]{background:#1d6a5e;color:#fff}
+.toolbar button:disabled{opacity:.35;cursor:default}
+.tip{position:absolute;left:10px;bottom:10px;right:10px;font-size:13px;color:#18262c;background:#ffffffe6;border-radius:6px;padding:6px 10px;pointer-events:none;box-shadow:0 1px 3px #0002}
+.empty{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.empty div{background:#fff;border-radius:10px;padding:18px 22px;max-width:360px;color:#18262c;box-shadow:0 2px 8px #0002;pointer-events:auto;font-size:14px}
+.empty b{font-family:var(--f-display);font-size:18px;display:block;margin-bottom:6px}
+.empty .btn{margin-top:10px;margin-right:6px}
+@media (max-width:860px){
+  body{height:auto;overflow:auto}
+  .app{grid-template-columns:1fr}
+  .stage{height:68vh;order:-1;border-radius:0}
+  aside.side{overflow:visible;padding:12px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>格局圖繪製工具</h1>
+  <div class="sub">手繪格局 → 彩色家具配置圖｜<a class="back" href="./">回房產試算工具箱</a></div>
+</header>
+
+<div class="app">
+<aside class="side">
+
+  <section class="card">
+    <h2><span class="step">1</span>上傳手繪格局圖</h2>
+    <p class="hint">拍照或掃描手繪圖都可以，會半透明放在底下讓你描。沒有手繪圖也能直接畫。</p>
+    <input type="file" id="bgFile" accept="image/*" hidden>
+    <button class="btn wide" id="btnBg">選擇圖片</button>
+    <div id="bgCtl" class="stack" hidden style="margin-top:10px">
+      <label class="f">底圖透明度 <input type="range" id="bgOp" min="0.1" max="1" step="0.05"></label>
+      <div class="row">
+        <label class="ck"><input type="checkbox" id="bgVis"> 顯示底圖</label>
+        <label class="ck"><input type="checkbox" id="bgLock"> 鎖定位置</label>
+      </div>
+      <button class="btn ghost wide" id="btnCalib">比例校正（點兩點輸入實際長度）</button>
+      <div id="calibBox" class="stack" hidden>
+        <label class="f">這兩點的實際長度（公尺）<input type="number" id="calibLen" step="0.01" min="0.1" placeholder="例如 4.2"></label>
+        <label class="ck"><input type="checkbox" id="calibAll" checked> 已畫的房間一起縮放</label>
+        <div class="row"><button class="btn" id="calibApply">套用</button><button class="btn ghost" id="calibCancel">取消</button></div>
+      </div>
+      <button class="btn danger wide" id="bgDel">移除底圖</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">2</span>描出每個空間</h2>
+    <p class="hint">選空間用途後按「畫房間」，在圖上拖曳畫出長方形。L 型空間用兩塊拼起來，邊線會自動吸附對齊。</p>
+    <div class="row">
+      <select id="drawType" aria-label="空間用途"></select>
+      <button class="btn" id="btnRoom" aria-pressed="false">畫房間</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">3</span>配置家具</h2>
+    <button class="btn wide" id="btnFurnishAll">全部房間一鍵配置家具</button>
+    <p class="hint" style="margin-top:8px">點下方家具會加到畫面中央（或選取中的房間），拖曳移動，按 R 旋轉、F 翻轉、Delete 刪除。門窗拖到牆邊會自動貼牆。</p>
+    <div id="lib"></div>
+  </section>
+
+  <section class="card" id="propsCard" hidden>
+    <h2 id="propsTitle">選取的項目</h2>
+    <div id="props" class="stack"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">4</span>匯出格局圖</h2>
+    <div class="stack">
+      <label class="f">物件名稱（圖面標題）<input id="title" placeholder="例如 北屯崇德巴黎角間店面"></label>
+      <div class="row">
+        <label class="f">圖片尺寸
+          <select id="fmt"><option value="45">IG 直式 4:5</option><option value="11">正方形 1:1</option><option value="orig">原比例高解析</option></select>
+        </label>
+        <label class="f">指北針
+          <select id="north"><option value="none">不顯示</option><option value="0">北朝上</option><option value="90">北朝右</option><option value="180">北朝下</option><option value="270">北朝左</option></select>
+        </label>
+      </div>
+      <label class="ck"><input type="checkbox" id="showPing"> 顯示各空間坪數</label>
+      <label class="ck"><input type="checkbox" id="showDims"> 顯示長寬尺寸</label>
+      <label class="ck"><input type="checkbox" id="showBrand"> 加上店家與經紀人資訊</label>
+      <button class="btn wide" id="btnExport">匯出 PNG 圖片</button>
+      <div class="row">
+        <button class="btn ghost" id="btnSave">儲存專案檔</button>
+        <button class="btn ghost" id="btnOpen">開啟專案檔</button>
+      </div>
+      <input type="file" id="projFile" accept=".json,application/json" hidden>
+      <div class="row">
+        <button class="btn ghost" id="btnDemo">載入範例</button>
+        <button class="btn danger" id="btnClear">清空重來</button>
+      </div>
+      <p class="hint" style="margin:0">坪數依你畫的範圍計算，僅供參考，以權狀及實際丈量為準。畫面會自動暫存在這台電腦的瀏覽器。</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">5</span>AI 立體上色<small class="meta">選用</small></h2>
+    <p class="hint">把格局圖交給 AI（例如 Gemini）變成有光影材質的立體平面圖，家具位置照你排的不變。</p>
+    <div class="stack">
+      <label class="f">裝潢風格
+        <select id="aiStyle"><option value="muji">日式無印風</option><option value="nordic">北歐極簡風</option><option value="cream">歐式奶油風</option></select>
+      </label>
+      <button class="btn" id="btnAiLine">① 下載 AI 用線稿圖</button>
+      <button class="btn" id="btnAiCopy">② 複製提示詞</button>
+      <textarea id="aiPrompt" readonly rows="6" style="font:inherit;font-size:12px;color:var(--ink);background:var(--paper);border:0;border-radius:4px;padding:8px;resize:vertical;width:100%"></textarea>
+      <p class="hint" style="margin:0">③ 打開 <a class="back" href="https://gemini.google.com/" target="_blank" rel="noopener">Gemini</a>，上傳線稿圖、貼上提示詞，產生後把圖片下載回電腦。</p>
+      <input type="file" id="aiFile" accept="image/*" hidden>
+      <button class="btn" id="btnAiBrand">④ 上傳 AI 圖片，加上標題與店家資訊</button>
+      <label class="ck"><input type="checkbox" id="aiLabels" checked> 疊上空間名稱（位置跑掉就取消勾選）</label>
+      <button class="btn ghost" id="btnAiAgain" hidden>用同一張 AI 圖重新匯出</button>
+    </div>
+  </section>
+
+</aside>
+
+<div class="stage" id="stage">
+  <svg id="cv" xmlns="http://www.w3.org/2000/svg">
+    <defs id="defs"></defs>
+    <rect id="gridRect"></rect>
+    <image id="bgImg" preserveAspectRatio="none"></image>
+    <g id="world"></g>
+    <g id="over"></g>
+  </svg>
+  <div class="toolbar">
+    <div class="grp">
+      <button id="tSel" aria-pressed="true" title="選取／移動（V）">選取</button>
+      <button id="tRoom" aria-pressed="false" title="畫房間（B）">畫房間</button>
+    </div>
+    <div class="grp">
+      <button id="tUndo" title="復原（Ctrl+Z）">↶ 復原</button>
+      <button id="tRedo" title="重做（Ctrl+Y）">↷</button>
+    </div>
+    <div class="grp">
+      <button id="tOut" title="縮小">－</button>
+      <button id="tIn" title="放大">＋</button>
+      <button id="tFit" title="顯示全部">全圖</button>
+    </div>
+  </div>
+  <div class="empty" id="empty" hidden>
+    <div><b>從手繪格局圖開始</b>上傳一張手繪圖，照著描出客廳、房間、衛浴，再一鍵配置家具。<br>
+      <button class="btn" id="eUpload">上傳手繪圖</button><button class="btn ghost" id="eDemo">先看範例</button></div>
+  </div>
+  <div class="tip" id="tip"></div>
+</div>
+</div>
+
+<script>
+'use strict';
+/* ========== 基本設定 ========== */
+const WALL=12, PING=3.305785, M=WALL/2+3, WALLC='#4a4540';
+const FONT="'Noto Sans TC','Microsoft JhengHei','PingFang TC',sans-serif";
+const SERIF="'Noto Serif TC','PMingLiU','Songti TC',serif";
+const BRAND={shop:'有巢氏房屋 台中文心捷運加盟店',addr:'台中市北屯區文心路四段674號1F',agent:'廖貽強',tel:'0922-543299',lic:'(102)登字第227351號'};
+const C={wood:'#D9C09B',woodS:'#9C8466',fab:'#D3CBBE',fabD:'#BDB3A3',fabS:'#8E8475',linen:'#FBF8F2',pil:'#EADFCD',line:'#7D7365',porc:'#F5F7F7',porcS:'#8A9599',green:'#BCD0A8',greenD:'#86A372'};
+const RT={
+ '客廳':{f:'#EFE3CF',p:'wood'},'客餐廳':{f:'#EFE3CF',p:'wood'},'餐廳':{f:'#F1E6D4',p:'wood'},'廚房':{f:'#E3E6DE',p:'tile'},
+ '主臥':{f:'#E2E8EC',p:'wood'},'次臥':{f:'#E5ECE2',p:'wood'},'小孩房':{f:'#EEE6EC',p:'wood'},'書房':{f:'#ECE3D3',p:'wood'},
+ '和室':{f:'#E9E2C2',p:'tatami'},'衛浴':{f:'#D8E6EA',p:'tile'},'玄關':{f:'#ECE6DB',p:'tile'},'陽台':{f:'#E3E3DD',p:'tile'},
+ '走道':{f:'#F2EEE7'},'儲藏室':{f:'#E7E2D9'},'店面':{f:'#F0E7D8',p:'tile'},'樓梯間':{f:'#E8E5DF'},'其他':{f:'#F0F0EC'}
+};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n1=v=>Math.round(v*10)/10;
+const uid=()=>Math.random().toString(36).slice(2,9);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ========== 家具圖示（俯視，中心為原點，正面朝下） ========== */
+const r=(x,y,w,h,rx,f,s,sw=1.5,ex='')=>`<rect x="${n1(x)}" y="${n1(y)}" width="${n1(Math.max(w,0))}" height="${n1(Math.max(h,0))}" rx="${rx}" fill="${f}"${s?` stroke="${s}" stroke-width="${sw}"`:''} ${ex}/>`;
+const ln=(x1,y1,x2,y2,s,sw=1.5,ex='')=>`<line x1="${n1(x1)}" y1="${n1(y1)}" x2="${n1(x2)}" y2="${n1(y2)}" stroke="${s}" stroke-width="${sw}" ${ex}/>`;
+const ci=(cx,cy,rr,f,s,sw=1.5)=>`<circle cx="${n1(cx)}" cy="${n1(cy)}" r="${n1(rr)}" fill="${f}"${s?` stroke="${s}" stroke-width="${sw}"`:''}/>`;
+const el=(cx,cy,rx,ry,f,s,sw=1.5)=>`<ellipse cx="${n1(cx)}" cy="${n1(cy)}" rx="${n1(rx)}" ry="${n1(ry)}" fill="${f}"${s?` stroke="${s}" stroke-width="${sw}"`:''}/>`;
+const txt=(x,y,t,fs,f)=>`<text x="${n1(x)}" y="${n1(y)}" font-size="${n1(fs)}" fill="${f}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}">${t}</text>`;
+
+function dSofa(w,d,n){const a=Math.min(18,w*.12),b=Math.min(22,d*.28);let s=r(-w/2,-d/2,w,d,8,C.fab,C.fabS);
+ s+=r(-w/2,-d/2,w,b,7,C.fabD,C.fabS)+r(-w/2,-d/2,a,d,7,C.fabD,C.fabS)+r(w/2-a,-d/2,a,d,7,C.fabD,C.fabS);
+ const cw=(w-2*a)/n;for(let i=0;i<n;i++)s+=r(-w/2+a+i*cw+2,-d/2+b+2,cw-4,d-b-6,5,C.fab,C.fabS,1);return s}
+function dLSofa(w,d){const md=Math.min(90,d*.6),cw=Math.min(90,w*.4),a=16,b=22;
+ let s=r(-w/2,-d/2,w,md,8,C.fab,C.fabS)+r(w/2-cw,-d/2,cw,d,8,C.fab,C.fabS);
+ s+=r(-w/2,-d/2,w,b,7,C.fabD,C.fabS)+r(w/2-b,-d/2,b,d,7,C.fabD,C.fabS)+r(-w/2,-d/2,a,md,7,C.fabD,C.fabS);
+ const sw=(w-a-cw)/2;for(let i=0;i<2;i++)s+=r(-w/2+a+i*sw+2,-d/2+b+2,sw-4,md-b-6,5,C.fab,C.fabS,1);
+ s+=r(w/2-cw+2,-d/2+b+2,cw-b-4,d-b-6,5,C.fab,C.fabS,1);return s}
+const dCoffee=(w,d)=>r(-w/2,-d/2,w,d,6,C.wood,C.woodS)+r(-w/2+6,-d/2+6,w-12,d-12,4,'none','#ffffffaa',1.2);
+const dTV=(w,d)=>r(-w/2,-d/2,w,d,3,C.wood,C.woodS)+r(-w*.33,-d/2+4,w*.66,7,2,'#55524d');
+const dRug=(w,d)=>r(-w/2,-d/2,w,d,10,'#E6D8BF')+r(-w/2+8,-d/2+8,w-16,d-16,6,'none','#CBB896',1.5,'stroke-dasharray="6 5"');
+function dBed(w,d){let s=r(-w/2,-d/2,w,10,3,C.wood,C.woodS)+r(-w/2+2,-d/2+10,w-4,d-12,6,C.linen,C.line);
+ const np=w>=140?2:1,pw=np===2?(w-30)/2:w-30;for(let i=0;i<np;i++)s+=r(-w/2+10+i*(pw+10),-d/2+18,pw,32,9,C.pil,C.line,1);
+ const t=-d/2+d*.36;s+=r(-w/2+2,t,w-4,d/2-t-2,6,'#E5DBCB',C.line,1.2)+ln(-w/2+3,t+18,w/2-3,t+18,C.line,1);return s}
+const dNight=(w,d)=>r(-w/2,-d/2,w,d,3,C.wood,C.woodS)+ci(0,0,Math.min(w,d)*.22,'#F7ECD3',C.woodS,1);
+function dWard(w,d){let s=r(-w/2,-d/2,w,d,2,'#E5D6BF',C.woodS);const n=Math.max(2,Math.round(w/50));
+ for(let i=1;i<n;i++)s+=ln(-w/2+i*w/n,-d/2,-w/2+i*w/n,d/2,C.woodS,1);s+=ln(-w/2+5,0,w/2-5,0,C.woodS,1,'stroke-dasharray="4 4"');return s}
+const dDresser=(w,d)=>r(-w/2,-d/2,w,d,3,C.wood,C.woodS)+el(0,-d/2+7,w*.3,4,'#EEF3F4',C.porcS,1);
+const dChair=(w,d)=>r(-w/2,-d/2,w,d,6,C.fab,C.fabS)+r(-w/2,-d/2,w,8,4,C.fabD,C.fabS);
+function dDining(w,d,n){const td=Math.max(50,d-72),cw=Math.min(44,w/n-6);let s='';
+ for(let i=0;i<n;i++){const x=-w/2+(i+.5)*w/n;
+  s+=`<g transform="translate(${n1(x)} ${n1(-d/2+20)})">${dChair(cw,40)}</g>`;
+  s+=`<g transform="translate(${n1(x)} ${n1(d/2-20)}) rotate(180)">${dChair(cw,40)}</g>`}
+ return s+r(-w/2,-td/2,w,td,4,C.wood,C.woodS)}
+function dRound(w,d){const R=Math.max(30,(Math.min(w,d)-80)/2);let s='';
+ [[0,-1,0],[1,0,90],[0,1,180],[-1,0,270]].forEach(([dx,dy,rot])=>{s+=`<g transform="translate(${n1(dx*(R+16))} ${n1(dy*(R+16))}) rotate(${rot})">${dChair(42,40)}</g>`});
+ return s+ci(0,0,R,C.wood,C.woodS)}
+function dKitchen(w,d){let s=r(-w/2,-d/2,w,d,2,'#E8E4DD',C.line);
+ if(w>=120){const sw=Math.min(70,w*.3);s+=r(-w/2+w*.12,-d/2+10,sw,d-22,6,'#D5DEE1',C.porcS,1)+ci(-w/2+w*.12+sw/2,-d/2+6,3,'#9aa6aa')}
+ if(w>=170){s+=r(w/2-90,-d/2+8,72,d-18,4,'#F3F1EC',C.line,1)+ci(w/2-72,0,11,'none','#55524d',1.5)+ci(w/2-36,0,11,'none','#55524d',1.5)}
+ return s}
+const dFridge=(w,d)=>r(-w/2,-d/2,w,d,4,'#F3F3F1',C.porcS)+ln(-w/2,d/2-8,w/2,d/2-8,C.porcS,1)+txt(0,-4,'冰箱',Math.min(w,d)*.24,'#7b8589');
+const dDesk=(w,d)=>r(-w/2,-d/2,w,d,3,C.wood,C.woodS)+r(-18,-d/2+10,36,24,2,'#A3ABAE');
+function dShelf(w,d){let s=r(-w/2,-d/2,w,d,2,C.wood,C.woodS);const n=Math.max(2,Math.round(w/30));for(let i=1;i<n;i++)s+=ln(-w/2+i*w/n,-d/2,-w/2+i*w/n,d/2,C.woodS,1);return s}
+const dToilet=(w,d)=>r(-w/2,-d/2,w,16,3,C.porc,C.porcS)+el(0,-d/2+16+(d-16)/2,w/2-1,(d-16)/2,C.porc,C.porcS)+el(0,-d/2+18+(d-16)/2,w*.3,(d-16)*.28,'#E3EBEE',C.porcS,1);
+const dBasin=(w,d)=>r(-w/2,-d/2,w,d,4,C.porc,C.porcS)+el(0,3,w*.32,d*.3,'#E3EBEE',C.porcS,1)+ci(0,-d/2+6,3,'#9aa6aa');
+const dShower=(w,d)=>r(-w/2,-d/2,w,d,2,'#E7F0F2',C.porcS)+ln(-w/2,-d/2,w/2,d/2,C.porcS,1)+ln(w/2,-d/2,-w/2,d/2,C.porcS,1)+ci(0,0,5,'#fff',C.porcS,1);
+const dTub=(w,d)=>r(-w/2,-d/2,w,d,8,C.porc,C.porcS)+r(-w/2+8,-d/2+8,w-16,d-16,Math.min(w,d)*.3,'#E3EDF0',C.porcS,1)+ci(-w/2+22,0,3.5,'#fff',C.porcS,1);
+const dWasher=(w,d)=>r(-w/2,-d/2,w,d,4,C.porc,C.porcS)+ci(0,3,Math.min(w,d)*.32,'#E3EBEE',C.porcS,1.2);
+function dDoor(w,d){const t=WALL+4,y0=-d/2;
+ return r(-w/2,y0-t/2,w,t,0,'#fff')+`<path d="M${n1(w/2)} ${n1(y0)} A${n1(w)} ${n1(w)} 0 0 1 ${n1(-w/2)} ${n1(y0+w)}" fill="none" stroke="${C.line}" stroke-width="1" stroke-dasharray="5 4"/>`+ln(-w/2,y0,-w/2,y0+w,'#5a534a',3)}
+const dSliding=(w,d)=>r(-w/2,-(WALL+4)/2,w,WALL+4,0,'#fff')+r(-w/2,-4,w*.55,4,0,'#fff',C.line,1.2)+r(w/2-w*.55,0,w*.55,4,0,'#fff',C.line,1.2);
+const dWindow=(w,d)=>r(-w/2,-(WALL+4)/2,w,WALL+4,0,'#fff')+r(-w/2,-WALL/2,w,WALL,0,'#fff',C.line,1.2)+ln(-w/2,0,w/2,0,C.line,1);
+function dStairs(w,d){let s=r(-w/2,-d/2,w,d,0,'#F5F2ED',C.line);for(let y=-d/2+25;y<d/2-1;y+=25)s+=ln(-w/2,y,w/2,y,C.line,1);
+ return s+ln(0,d/2-15,0,-d/2+20,'#8a7f70',2)+`<path d="M-8 ${n1(-d/2+32)}L0 ${n1(-d/2+18)}L8 ${n1(-d/2+32)}" fill="none" stroke="#8a7f70" stroke-width="2"/>`}
+const dColumn=(w,d)=>r(-w/2,-d/2,w,d,0,'#6f675f');
+const dShoe=(w,d)=>r(-w/2,-d/2,w,d,2,C.wood,C.woodS)+ln(-w/2,-d/2,w/2,d/2,C.woodS,1);
+function dPlant(w,d){const R=Math.min(w,d)/2;let s=ci(0,0,R*.95,C.green,C.greenD,1.2);
+ for(let i=0;i<6;i++){const a=i*Math.PI/3;s+=ci(Math.cos(a)*R*.45,Math.sin(a)*R*.45,R*.32,'#A9C293',C.greenD,1)}return s+ci(0,0,R*.25,'#94B07E',C.greenD,1)}
+
+const CAT={
+ sofa3:{n:'三人沙發',g:'客廳',w:210,d:90,draw:(w,d)=>dSofa(w,d,3)},
+ sofa2:{n:'雙人沙發',g:'客廳',w:160,d:85,draw:(w,d)=>dSofa(w,d,2)},
+ lsofa:{n:'L型沙發',g:'客廳',w:260,d:160,draw:dLSofa},
+ armchair:{n:'單人椅',g:'客廳',w:80,d:80,draw:(w,d)=>dSofa(w,d,1)},
+ coffee:{n:'茶几',g:'客廳',w:110,d:55,draw:dCoffee},
+ tvcab:{n:'電視櫃',g:'客廳',w:180,d:40,draw:dTV},
+ rug:{n:'地毯',g:'客廳',w:200,d:140,layer:'floor',draw:dRug},
+ bedQ:{n:'加大雙人床',g:'臥室',w:182,d:200,draw:dBed},
+ bedD:{n:'雙人床 5尺',g:'臥室',w:152,d:195,draw:dBed},
+ bedS:{n:'單人床',g:'臥室',w:106,d:195,draw:dBed},
+ nightstand:{n:'床頭櫃',g:'臥室',w:45,d:40,draw:dNight},
+ wardrobe:{n:'衣櫃',g:'臥室',w:180,d:60,draw:dWard},
+ dresser:{n:'化妝台',g:'臥室',w:100,d:45,draw:dDresser},
+ dining4:{n:'餐桌 4人',g:'餐廚',w:140,d:160,draw:(w,d)=>dDining(w,d,2)},
+ dining6:{n:'餐桌 6人',g:'餐廚',w:190,d:160,draw:(w,d)=>dDining(w,d,3)},
+ round:{n:'圓餐桌',g:'餐廚',w:190,d:190,draw:dRound},
+ kitchen:{n:'一字型廚具',g:'餐廚',w:240,d:60,draw:dKitchen},
+ fridge:{n:'冰箱',g:'餐廚',w:75,d:70,draw:dFridge},
+ desk:{n:'書桌',g:'書房',w:120,d:60,draw:dDesk},
+ chair:{n:'椅子',g:'書房',w:45,d:45,draw:dChair},
+ bookshelf:{n:'書櫃',g:'書房',w:90,d:35,draw:dShelf},
+ toilet:{n:'馬桶',g:'衛浴',w:40,d:70,draw:dToilet},
+ basin:{n:'洗手台',g:'衛浴',w:60,d:45,draw:dBasin},
+ shower:{n:'淋浴間',g:'衛浴',w:90,d:90,draw:dShower},
+ bathtub:{n:'浴缸',g:'衛浴',w:150,d:75,draw:dTub},
+ washer:{n:'洗衣機',g:'衛浴',w:60,d:60,draw:dWasher},
+ door:{n:'門',g:'門窗',w:90,d:90,layer:'open',square:true,wallY:d=>-d/2,draw:dDoor},
+ sliding:{n:'拉門',g:'門窗',w:150,d:12,layer:'open',wallY:()=>0,draw:dSliding},
+ window:{n:'窗戶',g:'門窗',w:150,d:15,layer:'open',wallY:()=>0,draw:dWindow},
+ stairs:{n:'樓梯',g:'門窗',w:100,d:250,draw:dStairs},
+ column:{n:'柱子',g:'門窗',w:60,d:60,draw:dColumn},
+ shoecab:{n:'鞋櫃',g:'其他',w:120,d:40,draw:dShoe},
+ plant:{n:'植栽',g:'其他',w:50,d:50,draw:dPlant},
+};
+const LIB=[
+ ['客廳',[['sofa3'],['sofa2'],['lsofa'],['armchair'],['coffee'],['tvcab'],['rug']]],
+ ['臥室',[['bedQ','加大雙人 6尺'],['bedD','雙人 5尺'],['bedS','單人 3.5尺'],['nightstand'],['wardrobe'],['dresser']]],
+ ['餐廚',[['dining4'],['dining6'],['round'],['kitchen'],['fridge']]],
+ ['書房',[['desk'],['chair'],['bookshelf']]],
+ ['衛浴與陽台',[['toilet'],['basin'],['shower'],['bathtub'],['washer']]],
+ ['門窗與結構',[['door','大門 100',100],['door','房門 90',90],['door','浴室門 75',75],['sliding'],['window'],['stairs'],['column']]],
+ ['其他',[['shoecab'],['plant']]],
+];
+
+/* ========== 狀態 ========== */
+const DEF={title:'',north:'none',fmt:'45',showPing:true,showDims:false,showBrand:true,rooms:[],items:[],bg:null};
+let S=JSON.parse(JSON.stringify(DEF));
+let view={x:-100,y:-100,s:.6}, sel=null, mode='select', drag=null, calib=null, spaceDown=false;
+const undo=[],redo=[]; const ptrs=new Map();
+const $=s=>document.querySelector(s);
+const svg=$('#cv'), world=$('#world'), over=$('#over'), bgImg=$('#bgImg');
+const getRoom=id=>S.rooms.find(x=>x.id===id), getItem=id=>S.items.find(x=>x.id===id);
+const snapStr=()=>JSON.stringify({rooms:S.rooms,items:S.items,bg:S.bg?{...S.bg,src:null}:null});
+function restore(str){const o=JSON.parse(str);S.rooms=o.rooms;S.items=o.items;if(o.bg&&S.bg)Object.assign(S.bg,{...o.bg,src:S.bg.src});sel=null}
+function rec(){undo.push(snapStr());if(undo.length>80)undo.shift();redo.length=0}
+function doUndo(){if(!undo.length)return;redo.push(snapStr());restore(undo.pop());changed()}
+function doRedo(){if(!redo.length)return;undo.push(snapStr());restore(redo.pop());changed()}
+let saveT=0;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('floorplan-v1',JSON.stringify(S))}catch(e){try{localStorage.setItem('floorplan-v1',JSON.stringify({...S,bg:null}))}catch(e2){}}},400)}
+function changed(){render();renderPanel();updatePrompt();save()}
+
+/* ========== 座標與吸附 ========== */
+function toW(e){const b=svg.getBoundingClientRect();return{x:view.x+(e.clientX-b.left)/view.s,y:view.y+(e.clientY-b.top)/view.s}}
+const tol=()=>10/view.s;
+function snapAxis(v,axis,ex){let best=null,bd=tol();
+ for(const rm of S.rooms){if(rm.id===ex)continue;const c=axis==='x'?[rm.x,rm.x+rm.w]:[rm.y,rm.y+rm.h];for(const q of c){const d=Math.abs(q-v);if(d<bd){bd=d;best=q}}}
+ return best!=null?best:Math.round(v/10)*10}
+function snapEdges(a,len,axis,ex){ // 移動時兩端擇一吸附
+ let best=null,bd=tol();
+ for(const rm of S.rooms){if(rm.id===ex)continue;const c=axis==='x'?[rm.x,rm.x+rm.w]:[rm.y,rm.y+rm.h];
+  for(const q of c){const d1=Math.abs(q-a),d2=Math.abs(q-(a+len));if(d1<bd){bd=d1;best=q}if(d2<bd){bd=d2;best=q-len}}}
+ return best!=null?best:Math.round(a/10)*10}
+const inRoom=(it,rm)=>it.x>rm.x&&it.x<rm.x+rm.w&&it.y>rm.y&&it.y<rm.y+rm.h;
+function snapOpening(it){const c=CAT[it.kind];if(c.layer!=='open')return;const oy=c.wallY(it.d),th=it.rot*Math.PI/180,cs=Math.round(Math.cos(th)),sn=Math.round(Math.sin(th));
+ const t=Math.max(25,14/view.s);let best=null,bd=t;
+ if(cs!==0){const wy=it.y+oy*cs;for(const rm of S.rooms){if(it.x<rm.x-20||it.x>rm.x+rm.w+20)continue;for(const q of[rm.y,rm.y+rm.h]){const d=Math.abs(q-wy);if(d<bd){bd=d;best=q}}}if(best!=null)it.y=best-oy*cs}
+ else{const wx=it.x-oy*sn;for(const rm of S.rooms){if(it.y<rm.y-20||it.y>rm.y+rm.h+20)continue;for(const q of[rm.x,rm.x+rm.w]){const d=Math.abs(q-wx);if(d<bd){bd=d;best=q}}}if(best!=null)it.x=best+oy*sn}}
+
+/* ========== 繪製 ========== */
+function patternDefs(){return `
+<pattern id="p-wood" width="120" height="36" patternUnits="userSpaceOnUse"><path d="M0 17.5H120M0 35.5H120M40 0V18M100 18V36" stroke="#8a6f4e" stroke-opacity=".16" stroke-width="1" fill="none"/></pattern>
+<pattern id="p-tile" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M0 59.5H60M59.5 0V60" stroke="#5f747c" stroke-opacity=".2" stroke-width="1" fill="none"/></pattern>
+<pattern id="p-tatami" width="90" height="180" patternUnits="userSpaceOnUse"><rect x=".5" y=".5" width="89" height="179" fill="none" stroke="#8f8a5a" stroke-opacity=".35" stroke-width="1.5"/></pattern>`}
+function itemSVG(it){const c=CAT[it.kind];return `<g data-t="item" data-id="${it.id}" transform="translate(${n1(it.x)} ${n1(it.y)}) rotate(${it.rot})${it.flip?' scale(-1 1)':''}">${c.draw(it.w,it.d)}<rect x="${n1(-it.w/2)}" y="${n1(-it.d/2)}" width="${n1(it.w)}" height="${n1(it.d)}" fill="transparent"/></g>`}
+function roomSub(rm){const a=[];if(S.showPing)a.push(`${(rm.w*rm.h/1e4/PING).toFixed(1)} 坪`);if(S.showDims)a.push(`${(rm.w/100).toFixed(1)}×${(rm.h/100).toFixed(1)}m`);return a.join(' · ')}
+function labelSVG(rm){const fs=clamp(Math.min(rm.w,rm.h)*.12,15,26),cx=rm.x+rm.w/2+(rm.lx||0),cy=rm.y+rm.h/2+(rm.ly||0),sub=roomSub(rm);
+ const halo=`stroke="#fff" stroke-width="${n1(fs*.28)}" stroke-linejoin="round" paint-order="stroke"`;
+ return `<g data-t="label" data-id="${rm.id}" transform="translate(${n1(cx)} ${n1(cy)})" style="cursor:move"><text y="${sub?n1(-fs*.35):0}" font-size="${n1(fs)}" font-weight="700" fill="#3d3a35" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" ${halo}>${esc(rm.name||rm.type)}</text>${sub?`<text y="${n1(fs*.75)}" font-size="${n1(fs*.66)}" fill="#6b655b" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" ${halo}>${esc(sub)}</text>`:''}</g>`}
+function labelsSVG(){return S.rooms.map(labelSVG).join('')}
+function contentSVG(noLabels){let fills='',floor='',walls='',furn='',open='',labels='';
+ for(const rm of S.rooms){const t=RT[rm.type]||RT['其他'];const g=`x="${n1(rm.x)}" y="${n1(rm.y)}" width="${n1(rm.w)}" height="${n1(rm.h)}"`;
+  fills+=`<rect data-t="room" data-id="${rm.id}" ${g} fill="${t.f}"/>`;if(t.p)fills+=`<rect ${g} fill="url(#p-${t.p})" pointer-events="none"/>`;
+  walls+=`<rect ${g} fill="none" stroke="${WALLC}" stroke-width="${WALL}" pointer-events="none"/>`;labels+=labelSVG(rm)}
+ for(const it of S.items){const c=CAT[it.kind];if(!c)continue;const s=itemSVG(it);if(c.layer==='floor')floor+=s;else if(c.layer==='open')open+=s;else furn+=s}
+ return fills+floor+walls+furn+open+(noLabels?'':labels)}
+let lastSrc=null;
+function render(){
+ const W=svg.clientWidth||800,H=svg.clientHeight||600,px=1/view.s;
+ svg.setAttribute('viewBox',`${view.x} ${view.y} ${W/view.s} ${H/view.s}`);
+ $('#defs').innerHTML=patternDefs()+`<pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M50 0V100M0 50H100" stroke="#e2ddd4" stroke-width="${px}" fill="none"/><path d="M0 0H100M0 0V100" stroke="#d3ccc0" stroke-width="${px*1.4}" fill="none"/></pattern>`;
+ const g=$('#gridRect');g.setAttribute('x',view.x);g.setAttribute('y',view.y);g.setAttribute('width',W/view.s);g.setAttribute('height',H/view.s);g.setAttribute('fill','url(#grid)');
+ if(S.bg&&S.bg.visible){if(lastSrc!==S.bg.src){bgImg.setAttribute('href',S.bg.src);lastSrc=S.bg.src}
+  bgImg.setAttribute('x',S.bg.x);bgImg.setAttribute('y',S.bg.y);bgImg.setAttribute('width',S.bg.w);bgImg.setAttribute('height',S.bg.h);bgImg.setAttribute('opacity',S.bg.opacity);
+  bgImg.style.display='';bgImg.style.pointerEvents=S.bg.locked?'none':'auto';bgImg.dataset.t='bg'}
+ else bgImg.style.display='none';
+ world.innerHTML=contentSVG();
+ // 選取外框與輔助線
+ let o='';const acc='#1d6a5e';
+ if(sel&&sel.t==='room'){const rm=getRoom(sel.id);if(rm){o+=`<rect x="${rm.x}" y="${rm.y}" width="${rm.w}" height="${rm.h}" fill="none" stroke="${acc}" stroke-width="${2*px}" stroke-dasharray="${6*px} ${4*px}" pointer-events="none"/>`;
+  const hs=12*px;[[rm.x,rm.y],[rm.x+rm.w,rm.y],[rm.x+rm.w,rm.y+rm.h],[rm.x,rm.y+rm.h]].forEach(([x,y],i)=>{o+=`<rect data-t="handle" data-id="${rm.id}" data-h="${i}" x="${x-hs/2}" y="${y-hs/2}" width="${hs}" height="${hs}" fill="#fff" stroke="${acc}" stroke-width="${2*px}" style="cursor:${i%2?'nesw':'nwse'}-resize"/>`})}}
+ if(sel&&sel.t==='item'){const it=getItem(sel.id);if(it)o+=`<g transform="translate(${it.x} ${it.y}) rotate(${it.rot})" pointer-events="none"><rect x="${-it.w/2-3*px}" y="${-it.d/2-3*px}" width="${it.w+6*px}" height="${it.d+6*px}" fill="none" stroke="${acc}" stroke-width="${2*px}" stroke-dasharray="${5*px} ${3*px}"/></g>`}
+ if(sel&&sel.t==='bg'&&S.bg)o+=`<rect x="${S.bg.x}" y="${S.bg.y}" width="${S.bg.w}" height="${S.bg.h}" fill="none" stroke="#b26a12" stroke-width="${2*px}" stroke-dasharray="${6*px} ${4*px}" pointer-events="none"/>`;
+ if(drag&&drag.type==='draw'&&drag.moved){const x=Math.min(drag.x0,drag.x1),y=Math.min(drag.y0,drag.y1),w=Math.abs(drag.x1-drag.x0),h=Math.abs(drag.y1-drag.y0);
+  o+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${acc}" fill-opacity=".12" stroke="${acc}" stroke-width="${2*px}" pointer-events="none"/>`+
+   `<text x="${x+w/2}" y="${y+h/2}" font-size="${14*px}" text-anchor="middle" dominant-baseline="central" fill="${acc}" font-family="${FONT}" font-weight="700" pointer-events="none">${(w/100).toFixed(1)} × ${(h/100).toFixed(1)} m｜${(w*h/1e4/PING).toFixed(1)} 坪</text>`}
+ if(mode==='calib'&&calib){const pts=[calib.p1,calib.p2].filter(Boolean);
+  if(pts.length===2)o+=`<line x1="${pts[0].x}" y1="${pts[0].y}" x2="${pts[1].x}" y2="${pts[1].y}" stroke="#b23a2e" stroke-width="${3*px}" pointer-events="none"/>`;
+  pts.forEach(p=>{o+=`<circle cx="${p.x}" cy="${p.y}" r="${6*px}" fill="#b23a2e" stroke="#fff" stroke-width="${2*px}" pointer-events="none"/>`})}
+ over.innerHTML=o;
+ $('#tUndo').disabled=!undo.length;$('#tRedo').disabled=!redo.length;
+ $('#empty').hidden=!!(S.rooms.length||S.bg);
+ $('#tip').textContent=tipText();
+}
+function tipText(){
+ if(mode==='calib')return !calib||!calib.p1?'比例校正：在底圖上點第一個點（例如一面牆的起點）':!calib.p2?'再點第二個點（同一面牆的終點）':'在左側輸入這段的實際長度，按「套用」';
+ if(mode==='room')return `畫房間：拖曳畫出「${$('#drawType').value}」，邊線靠近其他房間會自動對齊。按 Esc 結束。`;
+ if(sel&&sel.t==='item')return '拖曳移動｜R 旋轉｜F 左右翻轉｜Ctrl+D 複製｜Delete 刪除';
+ if(sel&&sel.t==='room')return '拖曳搬移房間（房內家具一起移動）｜拉四角調整大小｜名稱可拖曳';
+ return '拖曳空白處平移畫面，滾輪縮放；點房間或家具可編輯';
+}
+
+/* ========== 一鍵配置家具 ========== */
+function put(R,kind,side,o={}){const c=CAT[kind],w=o.w??c.w,d=o.d??c.d,off=o.off??0;let x,y,rot;
+ const al=len=>o.at!=null?o.at:len*(o.f??.5);
+ if(side==='top'){rot=0;x=R.x+al(R.w);y=R.y+M+off+d/2}
+ else if(side==='bottom'){rot=180;x=R.x+al(R.w);y=R.y+R.h-M-off-d/2}
+ else if(side==='left'){rot=270;y=R.y+al(R.h);x=R.x+M+off+d/2}
+ else if(side==='right'){rot=90;y=R.y+al(R.h);x=R.x+R.w-M-off-d/2}
+ else{rot=0;x=R.x+al(R.w);y=R.y+R.h*(o.fy??.5)}
+ if(o.rot!=null)rot=o.rot;return{id:uid(),kind,x,y,rot,w,d,flip:false}}
+function Lliving(W,H){const R={x:0,y:0,w:W,h:H},o=[];const sk=W>=300?'sofa3':W>=210?'sofa2':'armchair',sd=CAT[sk];
+ o.push(put(R,'tvcab','top',{w:Math.min(180,W-2*M-20)}));o.push(put(R,sk,'bottom'));
+ const gap=H-2*M-40-sd.d,cy=M+40+gap/2;
+ if(gap>=140){const rd=Math.min(150,gap-30),rw=Math.min(sd.w+10,W-2*M-40);if(rd>=80&&rw>=120)o.unshift(put(R,'rug','center',{w:rw,d:rd,fy:(cy+12)/H}));o.push(put(R,'coffee','center',{fy:(cy+10)/H}))}
+ if(W>=sd.w+260&&gap>=170)o.push(put(R,'armchair','left',{at:cy+10}));
+ if(W-M-55>W/2+sd.w/2+15)o.push(put(R,'plant','center',{at:W-M-30,fy:(H-M-30)/H}));
+ return o}
+function Ldining(W,H){const R={x:0,y:0,w:W,h:H};const k=(W>=300&&H>=250)?'dining6':(W>=230&&H>=220)?'dining4':(Math.min(W,H)>=200?'round':'dining4');
+ return[put(R,k,'center',k==='dining4'&&H<200?{d:Math.max(120,H-2*M-10)}:{})]}
+function Lkitchen(W,H){const R={x:0,y:0,w:W,h:H},o=[],av=W-2*M;
+ if(av>=230){const L=Math.min(300,av-85);o.push(put(R,'kitchen','top',{at:M+L/2,w:L}),put(R,'fridge','top',{at:M+L+8+37.5}))}
+ else o.push(put(R,'kitchen','top',{at:M+av/2,w:Math.max(90,av)}));return o}
+function Lbath(W,H){const R={x:0,y:0,w:W,h:H},o=[],av=W-2*M,sh=Math.min(90,H-2*M);
+ if(av>=60+70+sh+10&&sh>=70)o.push(put(R,'basin','top',{at:M+30}),put(R,'toilet','top',{at:M+95}),put(R,'shower','top',{at:W-M-sh/2,w:sh,d:sh}));
+ else if(av>=130)o.push(put(R,'basin','top',{at:M+30}),put(R,'toilet','top',{at:M+95}));
+ else o.push(put(R,'toilet','top'));return o}
+function Lbed(W,H,prefs,ex){const R={x:0,y:0,w:W,h:H},o=[];
+ const fA=k=>H>=CAT[k].d+2*M+50&&W>=CAT[k].w+2*M,fB=k=>W>=CAT[k].d+2*M+50&&H>=CAT[k].w+2*M;
+ let k=prefs.find(fA),md='A';if(!k){k=prefs.find(fB);md='B'}if(!k){k=prefs[prefs.length-1];md='A'}const b=CAT[k];
+ if(md==='A'){const deskOK=ex.desk&&W>=300;
+  o.push(put(R,k,'top'));
+  if(W>=b.w+2*45+2*M+10)o.push(put(R,'nightstand','top',{at:W/2-b.w/2-25}),put(R,'nightstand','top',{at:W/2+b.w/2+25}));
+  const free=H-2*M-b.d;let used=0;
+  if(ex.wardrobe){
+   if(free>=125){const ww=Math.min(ex.ww||180,W-2*M-(deskOK?140:10));if(ww>=80){o.push(put(R,'wardrobe','bottom',{at:M+ww/2,w:ww}));used=ww}}
+   else if((W-b.w)/2-M>=75){const ww=Math.min(ex.ww||180,H-2*M-50);if(ww>=80)o.push(put(R,'wardrobe','right',{at:H-M-ww/2,w:ww}))}}
+  if(ex.desk&&free>=125){const dx=W-M-60;if(dx-60>=M+used+10)o.push(put(R,'desk','bottom',{at:dx}),put(R,'chair','bottom',{at:dx,off:62,rot:0}))}
+ }else{
+  o.push(put(R,k,'left'));
+  if(H>=b.w+2*45+2*M+10)o.push(put(R,'nightstand','left',{at:H/2-b.w/2-25}),put(R,'nightstand','left',{at:H/2+b.w/2+25}));
+  if(ex.wardrobe&&W-2*M-b.d>=125)o.push(put(R,'wardrobe','right',{w:Math.min(ex.ww||180,H-2*M)}));
+ }return o}
+function Lstudy(W,H){const R={x:0,y:0,w:W,h:H},o=[put(R,'desk','top',{at:M+65}),put(R,'chair','top',{at:M+65,off:62,rot:180})];
+ if(W-2*M>=230)o.push(put(R,'bookshelf','top',{at:W-M-50}));return o}
+const LAYOUT={
+ '客廳':Lliving,'餐廳':Ldining,'廚房':Lkitchen,'衛浴':Lbath,'書房':Lstudy,
+ '主臥':(W,H)=>Lbed(W,H,['bedQ','bedD','bedS'],{wardrobe:true,ww:200}),
+ '次臥':(W,H)=>Lbed(W,H,['bedD','bedS'],{wardrobe:true,ww:150}),
+ '小孩房':(W,H)=>Lbed(W,H,['bedS'],{wardrobe:true,ww:120,desk:true}),
+ '陽台':(W,H)=>[put({x:0,y:0,w:W,h:H},'washer','top',{at:M+32})],
+ '玄關':(W,H)=>[put({x:0,y:0,w:W,h:H},'shoecab','top',{at:M+Math.min(120,W-2*M)/2,w:Math.min(120,W-2*M)})],
+};
+function furnishRegion(type,R){
+ if(type==='客餐廳'){const hz=R.w>=R.h,la=(hz?R.w:R.h)*.58;
+  const r1=hz?{x:R.x,y:R.y,w:la,h:R.h}:{x:R.x,y:R.y,w:R.w,h:la},r2=hz?{x:R.x+la,y:R.y,w:R.w-la,h:R.h}:{x:R.x,y:R.y+la,w:R.w,h:R.h-la};
+  return[...furnishRegion('客廳',r1),...furnishRegion('餐廳',r2)]}
+ const f=LAYOUT[type];if(!f)return[];const vt=R.h>R.w,W=vt?R.h:R.w,H=vt?R.w:R.h;
+ return f(W,H).map(it=>{if(!vt){it.x+=R.x;it.y+=R.y}else{const u=it.x,v=it.y;it.x=R.x+v;it.y=R.y+u;it.rot=(270-it.rot+360)%360;it.flip=!it.flip}return it})}
+function bbox(it){const a=it.rot%180===0,hw=(a?it.w:it.d)/2,hd=(a?it.d:it.w)/2;return{x0:it.x-hw,y0:it.y-hd,x1:it.x+hw,y1:it.y+hd}}
+const hit=(a,b)=>a.x0<b.x1-2&&a.x1>b.x0+2&&a.y0<b.y1-2&&a.y1>b.y0+2;
+const DROPPABLE=new Set(['nightstand','plant','armchair','fridge','bookshelf','rug']);
+function furnishRoom(rm){S.items=S.items.filter(it=>!(inRoom(it,rm)&&CAT[it.kind].layer!=='open'));
+ const doors=S.items.filter(it=>it.kind==='door').map(bbox);
+ S.items.push(...furnishRegion(rm.type,rm).filter(it=>!(DROPPABLE.has(it.kind)&&doors.some(d=>hit(bbox(it),d)))))}
+function clearRoomItems(rm){S.items=S.items.filter(it=>!(inRoom(it,rm)&&CAT[it.kind].layer!=='open'))}
+
+/* ========== 滑鼠／觸控 ========== */
+svg.addEventListener('contextmenu',e=>e.preventDefault());
+svg.addEventListener('pointerdown',e=>{
+ svg.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(ptrs.size===2){const[a,b]=[...ptrs.values()];drag={type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y),m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},v0:{...view}};return}
+ if(ptrs.size>2)return;
+ const p=toW(e),t=e.target.closest('[data-t]'),tt=t&&t.dataset.t,id=t&&t.dataset.id,pre=snapStr();
+ const base={sx:e.clientX,sy:e.clientY,pre,moved:false};
+ if(e.button===1||e.button===2||spaceDown){drag={type:'pan',...base,vx:view.x,vy:view.y};return}
+ if(mode==='calib'){if(!calib||calib.p2)calib={p1:p,p2:null};else calib.p2=p;render();renderPanel();if(calib.p2)setTimeout(()=>$('#calibLen').focus(),0);return}
+ if(tt==='handle'){drag={type:'resize',id,h:+t.dataset.h,o:{...getRoom(id)},...base};return}
+ if(mode==='room'){drag={type:'draw',x0:snapAxis(p.x,'x'),y0:snapAxis(p.y,'y'),hit:tt==='room'||tt==='label'?id:null,...base};drag.x1=drag.x0;drag.y1=drag.y0;return}
+ if(tt==='item'){const it=getItem(id);sel={t:'item',id};drag={type:'item',id,ox:p.x-it.x,oy:p.y-it.y,...base}}
+ else if(tt==='label'){const rm=getRoom(id);sel={t:'room',id};drag={type:'label',id,ox:p.x-(rm.lx||0),oy:p.y-(rm.ly||0),...base}}
+ else if(tt==='room'){const rm=getRoom(id);sel={t:'room',id};drag={type:'room',id,ox:p.x-rm.x,oy:p.y-rm.y,o:{...rm},kids:S.items.filter(it=>inRoom(it,rm)).map(it=>({it,x:it.x,y:it.y})),...base}}
+ else if(tt==='bg'){sel={t:'bg'};drag={type:'bg',ox:p.x-S.bg.x,oy:p.y-S.bg.y,...base}}
+ else{sel=null;drag={type:'pan',...base,vx:view.x,vy:view.y}}
+ render();renderPanel();
+});
+svg.addEventListener('pointermove',e=>{
+ if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(!drag)return;
+ if(drag.type==='pinch'){if(ptrs.size<2)return;const[a,b]=[...ptrs.values()],bx=svg.getBoundingClientRect();
+  const s=clamp(drag.v0.s*Math.hypot(a.x-b.x,a.y-b.y)/drag.d0,.05,8),wx=drag.v0.x+(drag.m0.x-bx.left)/drag.v0.s,wy=drag.v0.y+(drag.m0.y-bx.top)/drag.v0.s,m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+  view={s,x:wx-(m.x-bx.left)/s,y:wy-(m.y-bx.top)/s};render();return}
+ if(drag.type==='pan'){view.x=drag.vx-(e.clientX-drag.sx)/view.s;view.y=drag.vy-(e.clientY-drag.sy)/view.s;render();return}
+ if(!drag.moved){if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<4)return;drag.moved=true;undo.push(drag.pre);redo.length=0}
+ const p=toW(e);
+ if(drag.type==='draw'){drag.x1=snapAxis(p.x,'x');drag.y1=snapAxis(p.y,'y')}
+ else if(drag.type==='item'){const it=getItem(drag.id);it.x=Math.round((p.x-drag.ox)/5)*5;it.y=Math.round((p.y-drag.oy)/5)*5;snapOpening(it)}
+ else if(drag.type==='label'){const rm=getRoom(drag.id);rm.lx=p.x-drag.ox;rm.ly=p.y-drag.oy}
+ else if(drag.type==='room'){const rm=getRoom(drag.id);rm.x=snapEdges(p.x-drag.ox,rm.w,'x',rm.id);rm.y=snapEdges(p.y-drag.oy,rm.h,'y',rm.id);
+  const dx=rm.x-drag.o.x,dy=rm.y-drag.o.y;drag.kids.forEach(k=>{k.it.x=k.x+dx;k.it.y=k.y+dy})}
+ else if(drag.type==='resize'){const rm=getRoom(drag.id),o=drag.o,h=drag.h;let L=o.x,R=o.x+o.w,T=o.y,B=o.y+o.h;
+  if(h===0||h===3)L=snapAxis(p.x,'x',rm.id);if(h===1||h===2)R=snapAxis(p.x,'x',rm.id);if(h===0||h===1)T=snapAxis(p.y,'y',rm.id);if(h===2||h===3)B=snapAxis(p.y,'y',rm.id);
+  if(R-L<40){if(h===0||h===3)L=R-40;else R=L+40}if(B-T<40){if(h===0||h===1)T=B-40;else B=T+40}
+  Object.assign(rm,{x:L,y:T,w:R-L,h:B-T})}
+ else if(drag.type==='bg'){S.bg.x=p.x-drag.ox;S.bg.y=p.y-drag.oy}
+ render();if(drag.type==='resize')renderPanel();
+});
+function endPtr(e){ptrs.delete(e.pointerId);
+ if(!drag)return;if(drag.type==='pinch'){if(ptrs.size<2)drag=null;return}
+ const d=drag;drag=null;
+ if(d.type==='draw'){
+  if(d.moved){const x=Math.min(d.x0,d.x1),y=Math.min(d.y0,d.y1),w=Math.abs(d.x1-d.x0),h=Math.abs(d.y1-d.y0);
+   if(w>=40&&h>=40){const type=$('#drawType').value,rm={id:uid(),type,name:type,x,y,w,h,lx:0,ly:0};S.rooms.push(rm);sel={t:'room',id:rm.id}}else undo.pop()}
+  else if(d.hit)sel={t:'room',id:d.hit}}
+ changed()}
+svg.addEventListener('pointerup',endPtr);svg.addEventListener('pointercancel',endPtr);
+function zoomAt(cx,cy,f){const b=svg.getBoundingClientRect(),wx=view.x+(cx-b.left)/view.s,wy=view.y+(cy-b.top)/view.s,s=clamp(view.s*f,.05,8);view={s,x:wx-(cx-b.left)/s,y:wy-(cy-b.top)/s};render()}
+svg.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.clientX,e.clientY,Math.exp(-e.deltaY*.0015))},{passive:false});
+function bounds(){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+ for(const rm of S.rooms){x0=Math.min(x0,rm.x-WALL/2);y0=Math.min(y0,rm.y-WALL/2);x1=Math.max(x1,rm.x+rm.w+WALL/2);y1=Math.max(y1,rm.y+rm.h+WALL/2)}
+ for(const it of S.items){const a=it.rot%180===0,hw=(a?it.w:it.d)/2,hd=(a?it.d:it.w)/2;x0=Math.min(x0,it.x-hw);y0=Math.min(y0,it.y-hd);x1=Math.max(x1,it.x+hw);y1=Math.max(y1,it.y+hd)}
+ return x0>x1?null:{x:x0,y:y0,w:x1-x0,h:y1-y0}}
+function fit(){let b=bounds();if(S.bg){const g=S.bg;b=b?{x:Math.min(b.x,g.x),y:Math.min(b.y,g.y),w:0,h:0,x1:Math.max(b.x+b.w,g.x+g.w),y1:Math.max(b.y+b.h,g.y+g.h)}:{x:g.x,y:g.y,x1:g.x+g.w,y1:g.y+g.h};b.w=b.x1-b.x;b.h=b.y1-b.y}
+ if(!b)b={x:0,y:0,w:1000,h:800};const W=svg.clientWidth||800,H=svg.clientHeight||600,pad=60;
+ const s=clamp(Math.min((W-2*pad)/b.w,(H-2*pad-50)/b.h),.05,8);view={s,x:b.x+b.w/2-W/2/s,y:b.y+b.h/2-(H/2+10)/s};render()}
+new ResizeObserver(()=>render()).observe(svg);
+
+/* ========== 鍵盤 ========== */
+function delSel(){if(!sel)return;rec();
+ if(sel.t==='item')S.items=S.items.filter(x=>x.id!==sel.id);
+ else if(sel.t==='room'){const rm=getRoom(sel.id);if(rm){S.items=S.items.filter(it=>!(inRoom(it,rm)&&CAT[it.kind].layer!=='open'));S.rooms=S.rooms.filter(x=>x!==rm)}}
+ else if(sel.t==='bg'){undo.pop();return}
+ sel=null;changed()}
+function rotSel(dir=1){const it=sel&&sel.t==='item'&&getItem(sel.id);if(!it)return;rec();it.rot=((it.rot+90*dir)%360+360)%360;snapOpening(it);changed()}
+function flipSel(){const it=sel&&sel.t==='item'&&getItem(sel.id);if(!it)return;rec();it.flip=!it.flip;changed()}
+function dupSel(){const it=sel&&sel.t==='item'&&getItem(sel.id);if(!it)return;rec();const c={...it,id:uid(),x:it.x+30,y:it.y+30};S.items.push(c);sel={t:'item',id:c.id};changed()}
+function setMode(m){mode=m;if(m!=='calib')calib=null;$('#tSel').setAttribute('aria-pressed',m==='select');$('#tRoom').setAttribute('aria-pressed',m==='room');$('#btnRoom').setAttribute('aria-pressed',m==='room');
+ $('#btnRoom').textContent=m==='room'?'畫完了':'畫房間';svg.style.cursor=m==='room'||m==='calib'?'crosshair':'default';render();renderPanel()}
+document.addEventListener('keydown',e=>{
+ if(e.target.closest('input,select,textarea'))return;
+ const k=e.key.toLowerCase(),mod=e.ctrlKey||e.metaKey;
+ if(mod&&k==='z'){e.preventDefault();e.shiftKey?doRedo():doUndo();return}
+ if(mod&&k==='y'){e.preventDefault();doRedo();return}
+ if(mod&&k==='d'){e.preventDefault();dupSel();return}
+ if(k==='delete'||k==='backspace'){e.preventDefault();delSel();return}
+ if(k==='escape'){sel=null;setMode('select');return}
+ if(k==='r'){rotSel(e.shiftKey?-1:1);return}
+ if(k==='f'){flipSel();return}
+ if(k==='v'){setMode('select');return}
+ if(k==='b'){setMode('room');return}
+ if(k===' '){spaceDown=true;e.preventDefault();return}
+ const ar={arrowleft:[-1,0],arrowright:[1,0],arrowup:[0,-1],arrowdown:[0,1]}[k];
+ if(ar&&sel){e.preventDefault();const st=e.shiftKey?1:5;rec();
+  if(sel.t==='item'){const it=getItem(sel.id);it.x+=ar[0]*st;it.y+=ar[1]*st}
+  else if(sel.t==='room'){const rm=getRoom(sel.id);rm.x+=ar[0]*st;rm.y+=ar[1]*st;S.items.forEach(it=>{if(inRoom({x:it.x-ar[0]*st,y:it.y-ar[1]*st},rm)){it.x+=ar[0]*st;it.y+=ar[1]*st}})}
+  changed()}
+});
+document.addEventListener('keyup',e=>{if(e.key===' ')spaceDown=false});
+
+/* ========== 側欄 ========== */
+$('#drawType').innerHTML=Object.keys(RT).map(t=>`<option>${t}</option>`).join('');
+$('#lib').innerHTML=LIB.map(([g,arr])=>`<h3>${g}</h3><div class="lib">${arr.map(([k,lab,w])=>`<button data-k="${k}"${w?` data-w="${w}"`:''}>${lab||CAT[k].n}</button>`).join('')}</div>`).join('');
+$('#lib').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;const k=b.dataset.k,c=CAT[k];rec();
+ let w=+b.dataset.w||c.w,d=c.square?w:c.d,x,y;const rm=sel&&sel.t==='room'&&getRoom(sel.id);
+ if(rm){x=rm.x+rm.w/2;y=rm.y+rm.h/2}else{const W=svg.clientWidth,H=svg.clientHeight;x=view.x+W/2/view.s;y=view.y+H/2/view.s}
+ const it={id:uid(),kind:k,x:Math.round(x/5)*5,y:Math.round(y/5)*5,rot:0,w,d,flip:false};S.items.push(it);sel={t:'item',id:it.id};setMode('select');changed()});
+function renderPanel(){
+ const card=$('#propsCard'),P=$('#props');let h='';
+ if(sel&&sel.t==='room'){const rm=getRoom(sel.id);if(!rm){sel=null;return renderPanel()}
+  $('#propsTitle').textContent='房間';
+  h=`<div class="row"><label class="f">用途<select data-p="type">${Object.keys(RT).map(t=>`<option${t===rm.type?' selected':''}>${t}</option>`).join('')}</select></label>
+   <label class="f">圖上名稱<input data-p="name" value="${esc(rm.name)}"></label></div>
+   <div class="row"><label class="f">寬（公尺）<input type="number" step="0.05" min="0.4" data-p="wm" value="${n1(rm.w)/100}"></label><label class="f">深（公尺）<input type="number" step="0.05" min="0.4" data-p="hm" value="${n1(rm.h)/100}"></label></div>
+   <div class="meta">面積約 ${(rm.w*rm.h/1e4).toFixed(2)} m²，約 ${(rm.w*rm.h/1e4/PING).toFixed(2)} 坪（僅供參考）</div>
+   <button class="btn" data-a="furnish">這間一鍵配置家具</button>
+   <div class="row"><button class="btn ghost" data-a="clearItems">清除房內家具</button><button class="btn danger" data-a="del">刪除房間</button></div>`}
+ else if(sel&&sel.t==='item'){const it=getItem(sel.id);if(!it){sel=null;return renderPanel()}const c=CAT[it.kind];
+  $('#propsTitle').textContent=c.n;
+  h=`<div class="row"><label class="f">寬（公分）<input type="number" step="5" min="10" data-p="iw" value="${n1(it.w)}"></label>${c.square?'':`<label class="f">深（公分）<input type="number" step="5" min="5" data-p="id" value="${n1(it.d)}"></label>`}</div>
+   <div class="row3"><button class="btn ghost" data-a="rot">旋轉 90°</button><button class="btn ghost" data-a="flip">左右翻轉</button><button class="btn ghost" data-a="dup">複製</button></div>
+   <button class="btn danger" data-a="del">刪除</button>`}
+ card.hidden=!h;P.innerHTML=h;
+ // 底圖區
+ const bg=S.bg;$('#bgCtl').hidden=!bg;$('#btnBg').textContent=bg?'換一張底圖':'選擇圖片';
+ if(bg){$('#bgOp').value=bg.opacity;$('#bgVis').checked=bg.visible;$('#bgLock').checked=bg.locked}
+ $('#btnCalib').setAttribute('aria-pressed',mode==='calib');
+ $('#calibBox').hidden=!(mode==='calib'&&calib&&calib.p2);
+ $('#calibAll').closest('label').hidden=!S.rooms.length;
+}
+$('#props').addEventListener('change',e=>{const f=e.target.dataset.p;if(!f||!sel)return;rec();
+ if(sel.t==='room'){const rm=getRoom(sel.id);
+  if(f==='type'){if(rm.name===rm.type)rm.name=e.target.value;rm.type=e.target.value}
+  if(f==='name')rm.name=e.target.value.trim()||rm.type;
+  if(f==='wm'){const v=parseFloat(e.target.value);if(v>=.4)rm.w=Math.round(v*100)}
+  if(f==='hm'){const v=parseFloat(e.target.value);if(v>=.4)rm.h=Math.round(v*100)}}
+ else{const it=getItem(sel.id),c=CAT[it.kind],v=parseFloat(e.target.value);
+  if(f==='iw'&&v>=10){it.w=v;if(c.square)it.d=v}if(f==='id'&&v>=5)it.d=v;snapOpening(it)}
+ changed()});
+$('#props').addEventListener('click',e=>{const a=e.target.dataset.a;if(!a||!sel)return;
+ if(a==='furnish'){rec();furnishRoom(getRoom(sel.id));changed()}
+ if(a==='clearItems'){rec();clearRoomItems(getRoom(sel.id));changed()}
+ if(a==='del')delSel();if(a==='rot')rotSel();if(a==='flip')flipSel();if(a==='dup')dupSel()});
+
+$('#btnRoom').onclick=()=>setMode(mode==='room'?'select':'room');
+$('#tSel').onclick=()=>setMode('select');$('#tRoom').onclick=()=>setMode('room');
+$('#drawType').onchange=()=>{if(mode!=='room')setMode('room');else render()};
+$('#tUndo').onclick=doUndo;$('#tRedo').onclick=doRedo;
+$('#tIn').onclick=()=>{const b=svg.getBoundingClientRect();zoomAt(b.left+b.width/2,b.top+b.height/2,1.25)};
+$('#tOut').onclick=()=>{const b=svg.getBoundingClientRect();zoomAt(b.left+b.width/2,b.top+b.height/2,.8)};
+$('#tFit').onclick=fit;
+$('#btnFurnishAll').onclick=()=>{if(!S.rooms.length){alert('請先畫出房間');return}rec();S.rooms.forEach(furnishRoom);changed()};
+
+/* 底圖 */
+const pickBg=()=>$('#bgFile').click();
+$('#btnBg').onclick=pickBg;$('#eUpload').onclick=pickBg;
+$('#bgFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+ rd.onload=()=>{const im=new Image();im.onload=()=>{const mx=2000,k=Math.min(1,mx/Math.max(im.width,im.height)),cv=document.createElement('canvas');
+  cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+  const src=cv.toDataURL('image/jpeg',.85),w=1000,h=w*cv.height/cv.width;
+  S.bg={src,x:0,y:0,w,h,opacity:.5,visible:true,locked:true};sel=null;fit();changed();
+  setMode('calib');calib=null;render()};im.src=rd.result};rd.readAsDataURL(f);e.target.value=''};
+$('#bgOp').oninput=e=>{S.bg.opacity=+e.target.value;render();save()};
+$('#bgVis').onchange=e=>{S.bg.visible=e.target.checked;changed()};
+$('#bgLock').onchange=e=>{S.bg.locked=e.target.checked;if(!S.bg.locked)sel={t:'bg'};changed()};
+$('#bgDel').onclick=()=>{if(!confirm('確定移除底圖？'))return;S.bg=null;lastSrc=null;bgImg.removeAttribute('href');sel=null;changed()};
+$('#btnCalib').onclick=()=>{calib=null;setMode(mode==='calib'?'select':'calib')};
+$('#calibCancel').onclick=()=>setMode('select');
+$('#calibApply').onclick=()=>{const L=parseFloat($('#calibLen').value);if(!(L>0)||!calib||!calib.p2){alert('請輸入實際長度（公尺）');return}
+ const{p1,p2}=calib,dist=Math.hypot(p2.x-p1.x,p2.y-p1.y);if(dist<1)return;const f=L*100/dist;rec();
+ if(S.bg){S.bg.x=p1.x+(S.bg.x-p1.x)*f;S.bg.y=p1.y+(S.bg.y-p1.y)*f;S.bg.w*=f;S.bg.h*=f}
+ if($('#calibAll').checked&&S.rooms.length){S.rooms.forEach(rm=>{rm.x=Math.round(p1.x+(rm.x-p1.x)*f);rm.y=Math.round(p1.y+(rm.y-p1.y)*f);rm.w=Math.round(rm.w*f);rm.h=Math.round(rm.h*f);rm.lx=(rm.lx||0)*f;rm.ly=(rm.ly||0)*f});
+  S.items.forEach(it=>{it.x=p1.x+(it.x-p1.x)*f;it.y=p1.y+(it.y-p1.y)*f})}
+ $('#calibLen').value='';setMode('select');fit();changed()};
+$('#calibLen').addEventListener('keydown',e=>{if(e.key==='Enter')$('#calibApply').click()});
+
+/* 匯出設定 */
+['title','fmt','north'].forEach(k=>{$('#'+k).addEventListener('input',e=>{S[k]=e.target.value;save()})});
+['showPing','showDims','showBrand'].forEach(k=>{$('#'+k).addEventListener('change',e=>{S[k]=e.target.checked;changed()})});
+function syncSettings(){$('#title').value=S.title||'';$('#fmt').value=S.fmt||'45';$('#north').value=S.north||'none';$('#showPing').checked=!!S.showPing;$('#showDims').checked=!!S.showDims;$('#showBrand').checked=S.showBrand!==false}
+
+/* ========== 匯出 PNG ========== */
+function buildExportSVG(ai){
+ const b=bounds();if(!b)return null;const pad=40,cw=b.w+2*pad,ch=b.h+2*pad;
+ let W,H;if(S.fmt==='11'){W=2160;H=2160}else if(S.fmt==='orig'){W=2400;H=0}else{W=2160;H=2700}
+ const u=W/1080,mx=50*u,Hh=(S.title||S.north!=='none'||S.showPing?150:70)*u,Fh=(S.showBrand?175:70)*u;
+ let k;if(!H){k=(W-2*mx)/cw;if(ch*k>2600){k=2600/ch}H=Math.round(Hh+Fh+ch*k)}else k=Math.min((W-2*mx)/cw,(H-Hh-Fh)/ch);
+ const ox=(W-cw*k)/2,oy=Hh+((H-Hh-Fh)-ch*k)/2;
+ const total=S.rooms.reduce((s,rm)=>s+rm.w*rm.h,0)/1e4/PING;
+ const title=S.title||'格局示意圖',subt=[S.title?'格局示意圖':'',S.showPing?`各空間合計約 ${total.toFixed(1)} 坪（依圖面估算）`:''].filter(Boolean).join('｜');
+ const T=(x,y,t,fs,col,o='')=>`<text x="${n1(x)}" y="${n1(y)}" font-size="${n1(fs)}" fill="${col}" font-family="${FONT}" ${o}>${esc(t)}</text>`;
+ let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${patternDefs()}</defs><rect width="${W}" height="${H}" fill="#ffffff"/>`;
+ s+=`<text x="${n1(mx)}" y="${n1(70*u)}" font-size="${n1(42*u)}" font-weight="900" fill="#18262c" font-family="${SERIF}">${esc(title)}</text>`;
+ if(subt)s+=T(mx,112*u,subt,22*u,'#5d6b6e');
+ if(S.north!=='none'){const cx=W-mx-38*u,cy=72*u,R=34*u;
+  s+=`<g transform="translate(${n1(cx)} ${n1(cy)}) rotate(${S.north})"><circle r="${n1(R)}" fill="#fff" stroke="#18262c" stroke-width="${n1(2*u)}"/><path d="M0 ${n1(-R*.78)}L${n1(R*.32)} ${n1(R*.45)}L0 ${n1(R*.2)}L${n1(-R*.32)} ${n1(R*.45)}Z" fill="#1d6a5e"/><text y="${n1(-R-10*u)}" font-size="${n1(20*u)}" font-weight="700" text-anchor="middle" fill="#18262c" font-family="${FONT}">N</text></g>`}
+ s+=`<g transform="translate(${n1(ox)} ${n1(oy)}) scale(${k}) translate(${n1(-b.x+pad)} ${n1(-b.y+pad)})">${ai?`<image href="${ai.src}" x="${n1(b.x-pad)}" y="${n1(b.y-pad)}" width="${n1(cw)}" height="${n1(ch)}" preserveAspectRatio="xMidYMid meet"/>${ai.labels?labelsSVG():''}`:contentSVG()}</g>`;
+ const fy=H-Fh;s+=`<line x1="${n1(mx)}" y1="${n1(fy+14*u)}" x2="${n1(W-mx)}" y2="${n1(fy+14*u)}" stroke="#d5dcd9" stroke-width="${n1(2*u)}"/>`;
+ const disc=ai?'AI 生成示意圖，家具與材質僅供參考，實際以現況為準':'格局為示意圖，家具配置僅供參考，實際以現況為準';
+ if(S.showBrand){
+  s+=T(mx,fy+62*u,BRAND.shop,30*u,'#1d6a5e','font-weight="700"');
+  s+=T(mx,fy+104*u,`經紀人 ${BRAND.agent}　${BRAND.tel}`,25*u,'#18262c','font-weight="700"');
+  s+=T(mx,fy+142*u,`${BRAND.addr}｜經紀人證號：${BRAND.lic}`,18*u,'#5d6b6e');
+  s+=T(W-mx,fy+62*u,disc,16*u,'#8a9496','text-anchor="end"');
+ }else s+=T(mx,fy+52*u,disc,18*u,'#8a9496');
+ return{svg:s+'</svg>',W,H}}
+const fname=v=>`${(S.title||'物件').replace(/[\\/:*?"<>|\s]/g,'')}格局圖_${v}.png`;
+function svgToPNG(o,name){const url=URL.createObjectURL(new Blob([o.svg],{type:'image/svg+xml;charset=utf-8'})),im=new Image();
+ im.onload=()=>{const cv=document.createElement('canvas');cv.width=o.W;cv.height=o.H;const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,o.W,o.H);g.drawImage(im,0,0);URL.revokeObjectURL(url);
+  cv.toBlob(bl=>{const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)},'image/png')};
+ im.onerror=()=>alert('匯出失敗，請重新整理頁面再試一次');im.src=url}
+$('#btnExport').onclick=()=>{const o=buildExportSVG();if(!o){alert('請先畫出房間');return}svgToPNG(o,fname('家具配置版'))};
+
+/* ========== AI 立體上色 ========== */
+const AISTYLE={
+ muji:{n:'日式無印風',d:'日式無印風：淺色橡木地板、米白牆面、原木家具、亞麻與棉質布料、低彩度大地色系、柔和的自然光'},
+ nordic:{n:'北歐極簡風',d:'北歐極簡風：淺灰白橡木地板、白色牆面、淺灰布沙發、少量黑色細金屬點綴、綠色植栽、線條簡潔明亮'},
+ cream:{n:'歐式奶油風',d:'歐式奶油風：奶油白與奶茶色調、圓弧造型家具、溫潤的淺色木地板或微光澤石材、柔軟布料、溫暖的室內光'}};
+function aiPromptText(){const st=AISTYLE[$('#aiStyle').value]||AISTYLE.muji;
+ const rooms=[...new Set(S.rooms.map(r=>r.name||r.type))].join('、');
+ return `請把這張 2D 平面格局圖，轉成正上方俯視的立體彩色平面圖（3D 渲染效果，帶自然光影與材質質感）。
+【必須保留】牆體位置與厚度、門窗位置、每個空間的形狀與大小比例、所有家具的位置、尺寸與擺放方向；不要新增或移除家具，不要改動格局。
+【風格】${st.d}。
+【材質】客廳、臥室用木地板；衛浴、廚房、陽台用磁磚。
+${rooms?`【空間】${rooms}。\n`:''}【輸出】畫面不要有任何文字、尺寸標註或浮水印；背景保持純白；長寬比例與原圖完全相同，構圖不要裁切或縮放。`}
+function updatePrompt(){$('#aiPrompt').value=aiPromptText()}
+function buildAILineSVG(){const b=bounds();if(!b)return null;const pad=40,cw=b.w+2*pad,ch=b.h+2*pad,k=2048/Math.max(cw,ch),W=Math.round(cw*k),H=Math.round(ch*k);
+ return{W,H,svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${patternDefs()}</defs><rect width="${W}" height="${H}" fill="#fff"/><g transform="scale(${k}) translate(${n1(-b.x+pad)} ${n1(-b.y+pad)})">${contentSVG(true)}</g></svg>`}}
+$('#aiStyle').onchange=updatePrompt;
+$('#btnAiLine').onclick=()=>{const o=buildAILineSVG();if(!o){alert('請先畫出房間');return}updatePrompt();svgToPNG(o,fname('AI用線稿'))};
+$('#btnAiCopy').onclick=async()=>{updatePrompt();const t=$('#aiPrompt');
+ try{await navigator.clipboard.writeText(t.value)}catch(e){t.select();document.execCommand('copy')}
+ const b=$('#btnAiCopy');b.textContent='已複製 ✓';setTimeout(()=>b.textContent='② 複製提示詞',1500)};
+let aiSrc=null;
+function exportAI(){const o=buildExportSVG({src:aiSrc,labels:$('#aiLabels').checked});if(!o){alert('請先畫出房間');return}svgToPNG(o,fname(`AI上色版_${AISTYLE[$('#aiStyle').value].n}`))}
+$('#btnAiBrand').onclick=()=>{if(!S.rooms.length){alert('請先畫出房間');return}$('#aiFile').click()};
+$('#aiFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+ rd.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,2400/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);
+  cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);aiSrc=cv.toDataURL('image/jpeg',.92);$('#btnAiAgain').hidden=false;exportAI()};im.src=rd.result};rd.readAsDataURL(f);e.target.value=''};
+$('#btnAiAgain').onclick=()=>{if(aiSrc)exportAI()};
+
+/* 專案檔 */
+$('#btnSave').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download=`${(S.title||'物件').replace(/[\\/:*?"<>|\s]/g,'')}格局圖_專案檔.json`;document.body.appendChild(a);a.click();a.remove()};
+$('#btnOpen').onclick=()=>$('#projFile').click();
+$('#projFile').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.rooms))throw 0;rec();S={...DEF,...o};lastSrc=null;sel=null;syncSettings();fit();changed()}catch(err){alert('這不是格局圖專案檔')}});e.target.value=''};
+$('#btnClear').onclick=()=>{if(!confirm('確定清空所有房間、家具和底圖？（可按復原救回房間與家具）'))return;rec();S={...JSON.parse(JSON.stringify(DEF)),title:S.title,fmt:S.fmt,north:S.north,showPing:S.showPing,showDims:S.showDims,showBrand:S.showBrand};lastSrc=null;sel=null;setMode('select');changed()};
+function loadDemo(){rec();const R=(type,x,y,w,h)=>({id:uid(),type,name:type,x,y,w,h,lx:0,ly:0});
+ S.rooms=[R('客餐廳',0,0,720,420),R('廚房',720,0,240,260),R('陽台',720,260,240,160),R('主臥',0,420,380,360),R('衛浴',380,420,200,180),R('衛浴',380,600,200,180),R('次臥',580,420,380,360)];
+ const I=(kind,x,y,rot,w)=>{const c=CAT[kind];w=w||c.w;return{id:uid(),kind,x,y,rot,w,d:c.square?w:c.d,flip:false}};
+ S.items=[I('door',130,50,0,100),I('window',0,210,90,200),I('window',190,780,0,180),I('window',770,780,0,180),I('door',330,465,0,90),I('door',630,465,0,90),
+  I('door',490,457.5,0,75),I('door',417.5,740,270,75),I('sliding',720,130,90,120),I('sliding',840,260,0,120)];
+ S.rooms.forEach(furnishRoom);if(!S.title)S.title='範例 2房2廳2衛';syncSettings();sel=null;setMode('select');fit();changed()}
+$('#btnDemo').onclick=loadDemo;$('#eDemo').onclick=loadDemo;
+
+/* 啟動 */
+try{const o=JSON.parse(localStorage.getItem('floorplan-v1')||'null');if(o&&Array.isArray(o.rooms))S={...DEF,...o}}catch(e){}
+syncSettings();renderPanel();updatePrompt();requestAnimationFrame(fit);
+</script>
+</body>
+</html>
